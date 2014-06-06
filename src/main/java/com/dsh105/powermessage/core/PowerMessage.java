@@ -19,7 +19,6 @@ package com.dsh105.powermessage.core;
 
 import com.captainbern.minecraft.reflection.MinecraftReflection;
 import com.captainbern.reflection.Reflection;
-import com.dsh105.powermessage.action.ClickEvent;
 import com.dsh105.powermessage.exception.InvalidMessageException;
 import com.dsh105.simpleutils.ItemUtil;
 import com.dsh105.simpleutils.paginator.Pageable;
@@ -36,8 +35,10 @@ import org.bukkit.inventory.ItemStack;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Iterator;
 
+/**
+ * Represents a message that internally manipulates JSON to allow the sending of fancy, interactive messages to players
+ */
 public class PowerMessage implements Pageable {
 
     private static Class<?> NBT_TAG_COMPOUND = null;
@@ -376,7 +377,7 @@ public class PowerMessage implements Pageable {
      * Displays a statistic to the viewer when the message is hovered over
      *
      * @param which Statistic to show
-     * @param item Item to show
+     * @param item  Item to show
      * @return This object
      */
     public PowerMessage statisticTooltip(Statistic which, Material item) {
@@ -398,7 +399,7 @@ public class PowerMessage implements Pageable {
      * </p>
      * Displays a statistic to the viewer when the message is hovered over
      *
-     * @param which Statistic to show
+     * @param which  Statistic to show
      * @param entity Entity type to show
      * @return This object
      */
@@ -420,6 +421,7 @@ public class PowerMessage implements Pageable {
      * Gets a copy of the snippets in a PowerMessage
      * </p>
      * Editing this list will not change the content of the original PowerMessage
+     *
      * @return List of snippets in a PowerMessage
      */
     public ArrayList<PowerSnippet> getSnippets() {

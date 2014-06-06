@@ -17,8 +17,14 @@
 
 package com.dsh105.powermessage.action;
 
+/**
+ * Represents an event to be called when a {@link com.dsh105.powermessage.core.PowerMessage} is clicked
+ */
 public class ClickEvent extends ActionEvent {
 
+    /**
+     * Constructs a new ClickEvent
+     */
     public ClickEvent() {
         super("click");
     }

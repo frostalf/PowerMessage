@@ -24,6 +24,9 @@ import org.bukkit.craftbukkit.libs.com.google.gson.stream.JsonWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
+/**
+ * Represents a particular snippet of a {@link com.dsh105.powermessage.core.PowerMessage}
+ */
 public class PowerSnippet {
 
     private String text;

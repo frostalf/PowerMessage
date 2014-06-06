@@ -17,31 +17,54 @@
 
 package com.dsh105.powermessage.action;
 
+import org.apache.commons.lang.Validate;
 import org.bukkit.craftbukkit.libs.com.google.gson.stream.JsonWriter;
 
 import java.io.IOException;
 
+/**
+ * Represents an event that can be called by a {@link com.dsh105.powermessage.core.PowerMessage}
+ */
 public abstract class ActionEvent {
 
     private String actionType;
     private String name;
     private String data;
 
+    /**
+     * Constructs a new action event with a certain type
+     *
+     * @param actionType Type of action to construct
+     */
     public ActionEvent(String actionType) {
         this.actionType = actionType;
     }
 
+    /**
+     * Sets the name of an event
+     *
+     * @param name Name of the event
+     * @return This object
+     */
     public ActionEvent withName(String name) {
         this.name = name;
         return this;
     }
 
+    /**
+     * Sets the data of an event
+     *
+     * @param data Data of the event
+     * @return This object
+     */
     public ActionEvent withData(String data) {
         this.data = data;
         return this;
     }
 
     public JsonWriter write(JsonWriter writer) {
+        Validate.notEmpty(name, "Action name cannot be empty!");
+        Validate.notEmpty(data, "Action data cannot be empty!");
         try {
             writer.name(actionType + "Event").beginObject().name("action").value(this.name).name("value").value(this.data).endObject();
 
