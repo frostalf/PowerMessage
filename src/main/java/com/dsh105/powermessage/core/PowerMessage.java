@@ -191,19 +191,15 @@ public class PowerMessage implements Pageable {
 
     public PowerMessage itemTooltip(ItemStack itemStack) {
         Reflection r = new Reflection();
-        try {
-            Object nmsCopy = r.reflect(CRAFT_ITEMSTACK, "asNMSCopy", ItemStack.class).getAccessor().invokeStatic(itemStack);
-            Object nbtData = r.reflect(nmsCopy.getClass(), "save", NBT_TAG_COMPOUND).getAccessor().invoke(nmsCopy, r.reflect(NBT_TAG_COMPOUND.getConstructor()));
-            return itemTooltip(nbtData.toString());
-        } catch (NoSuchMethodException e) {
-            throw new InvalidMessageException("Invalid ItemStack", e);
-        }
+        Object nmsCopy = r.reflect(CRAFT_ITEMSTACK).getSafeMethod("asNMSCopy", ItemStack.class).getAccessor().invokeStatic(itemStack);
+        Object nbtData = r.reflect(nmsCopy.getClass()).getSafeMethod("save", NBT_TAG_COMPOUND).getAccessor().invoke(nmsCopy, r.reflect(NBT_TAG_COMPOUND).getSafeConstructors());
+        return itemTooltip(nbtData.toString());
     }
 
     public PowerMessage achievementTooltip(Achievement which) {
         Reflection r = new Reflection();
-        Object achievement = r.reflect(CRAFT_STATISTIC, "getNMSAchievement", Achievement.class).getAccessor().invokeStatic(which);
-        return achievementTooltip((String) r.reflect(achievement.getClass(), "name").getAccessor().get(achievement));
+        Object achievement = r.reflect(CRAFT_STATISTIC).getSafeMethod("getNMSAchievement", Achievement.class).getAccessor().invokeStatic(which);
+        return achievementTooltip((String) r.reflect(achievement.getClass()).getSafeFieldByNameAndType("name", String.class).getAccessor().get(achievement));
     }
 
     public PowerMessage statisticTooltip(Statistic which) {
@@ -212,8 +208,8 @@ public class PowerMessage implements Pageable {
         }
 
         Reflection r = new Reflection();
-        Object achievement = r.reflect(CRAFT_STATISTIC, "getNMSStatistic", Statistic.class).getAccessor().invokeStatic(which);
-        return achievementTooltip((String) r.reflect(achievement.getClass(), "name").getAccessor().get(achievement));
+        Object achievement = r.reflect(CRAFT_STATISTIC).getSafeMethod("getNMSStatistic", Statistic.class).getAccessor().invokeStatic(which);
+        return achievementTooltip((String) r.reflect(achievement.getClass()).getSafeFieldByNameAndType("name", String.class).getAccessor().get(achievement));
     }
 
     public PowerMessage statisticTooltip(Statistic which, Material item) {
@@ -226,8 +222,8 @@ public class PowerMessage implements Pageable {
         }
 
         Reflection r = new Reflection();
-        Object achievement = r.reflect(CRAFT_STATISTIC, "getMaterialStatistic", Statistic.class, Material.class).getAccessor().invokeStatic(which, item);
-        return achievementTooltip((String) r.reflect(achievement.getClass(), "name").getAccessor().get(achievement));
+        Object achievement = r.reflect(CRAFT_STATISTIC).getSafeMethod("getMaterialStatistic", Statistic.class, Material.class).getAccessor().invokeStatic(which, item);
+        return achievementTooltip((String) r.reflect(achievement.getClass()).getSafeFieldByNameAndType("name", String.class).getAccessor().get(achievement));
     }
 
     public PowerMessage statisticTooltip(Statistic which, EntityType entity) {
@@ -240,8 +236,8 @@ public class PowerMessage implements Pageable {
         }
 
         Reflection r = new Reflection();
-        Object achievement = r.reflect(CRAFT_STATISTIC, "getEntityStatistic", Statistic.class, EntityType.class).getAccessor().invokeStatic(which, entity);
-        return achievementTooltip((String) r.reflect(achievement.getClass(), "name").getAccessor().get(achievement));
+        Object achievement = r.reflect(CRAFT_STATISTIC).getSafeMethod("getEntityStatistic", Statistic.class, EntityType.class).getAccessor().invokeStatic(which, entity);
+        return achievementTooltip((String) r.reflect(achievement.getClass()).getSafeFieldByNameAndType("name", String.class).getAccessor().get(achievement));
     }
 
     public ArrayList<PowerSnippet> getSnippets() {
