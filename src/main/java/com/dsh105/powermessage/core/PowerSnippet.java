@@ -30,10 +30,20 @@ public class PowerSnippet {
     private ArrayList<ChatColor> colours = new ArrayList<>();
     private ArrayList<ActionEvent> actionEvents = new ArrayList<>();
 
+    /**
+     * Constructs a new PowerSnippet with text
+     *
+     * @param text Textual content to be included in the snippet
+     */
     public PowerSnippet(String text) {
         this.text = text;
     }
 
+    /**
+     * Gets the text of a snippet
+     *
+     * @return Textual content of a snippet
+     */
     public String getText() {
         return text;
     }
@@ -42,14 +52,30 @@ public class PowerSnippet {
         this.text = text;
     }
 
+    /**
+     * Gets the colours of a snippet
+     *
+     * @return Colours in a snippet
+     */
     public ArrayList<ChatColor> getColours() {
         return new ArrayList<>(colours);
     }
 
+    /**
+     * Gets the action events of a snippet
+     *
+     * @return Action events of a snippet
+     */
     public ArrayList<ActionEvent> getActionEvents() {
         return new ArrayList<>(actionEvents);
     }
 
+    /**
+     * Adds colours to a snippet
+     *
+     * @param colours Colours to add
+     * @return This object
+     */
     public PowerSnippet withColours(ChatColor... colours) {
         for (ChatColor c : colours) {
             this.colours.add(c);
@@ -57,6 +83,12 @@ public class PowerSnippet {
         return this;
     }
 
+    /**
+     * Adds events to a snippet
+     *
+     * @param events Events to add
+     * @return This object
+     */
     public PowerSnippet withEvents(ActionEvent... events) {
         for (ActionEvent event : events) {
             this.actionEvents.add(event);
@@ -64,6 +96,14 @@ public class PowerSnippet {
         return this;
     }
 
+    /**
+     * Adds an event to a snippet
+     *
+     * @param eventType Type of event to add
+     * @param eventName Name of event being added
+     * @param eventData Data of event being added
+     * @return This object
+     */
     public PowerSnippet withEvent(String eventType, String eventName, String eventData) {
         this.actionEvents.add(new ActionEvent(eventType) {
             @Override

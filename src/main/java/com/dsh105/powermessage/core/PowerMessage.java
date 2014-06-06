@@ -36,6 +36,7 @@ import org.bukkit.inventory.ItemStack;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class PowerMessage implements Pageable {
 
@@ -58,9 +59,17 @@ public class PowerMessage implements Pageable {
     private String rawJson;
     private boolean convertedToJson;
 
+    /**
+     * Constructs a new, empty PowerMessage
+     */
     public PowerMessage() {
     }
 
+    /**
+     * Constructs a new PowerMessage with a starting text snippet
+     *
+     * @param firstSnippet First snippet to construct the message with
+     */
     public PowerMessage(String firstSnippet) {
         this.snippets.add(new PowerSnippet(firstSnippet));
     }
@@ -77,6 +86,12 @@ public class PowerMessage implements Pageable {
         return result.toString();
     }
 
+    /**
+     * Sends a message to a Bukkit {@link org.bukkit.command.CommandSender}
+     *
+     * @param sender Whom to send the message to
+     * @return This object
+     */
     public PowerMessage send(CommandSender sender) {
         if (sender instanceof Player) {
             send((Player) sender);
@@ -86,6 +101,12 @@ public class PowerMessage implements Pageable {
         return this;
     }
 
+    /**
+     * Sends a message to a group of Bukkit {@link org.bukkit.command.CommandSender}s
+     *
+     * @param senders Whom to send the message to
+     * @return This object
+     */
     public PowerMessage send(CommandSender... senders) {
         for (CommandSender sender : senders) {
             send(sender);
@@ -93,10 +114,23 @@ public class PowerMessage implements Pageable {
         return this;
     }
 
+    /**
+     * Sends a message to a Bukkit {@link org.bukkit.entity.Player}
+     *
+     * @param player Whom to send the message to
+     * @return This object
+     */
     public PowerMessage send(Player player) {
         // TODO: Fancy packet stuff
+        return this;
     }
 
+    /**
+     * Sends this message to a group of Bukkit {@link org.bukkit.entity.Player}s
+     *
+     * @param players Whom to send the message to
+     * @return This object
+     */
     public PowerMessage send(Player... players) {
         for (Player player : players) {
             send(player);
@@ -104,91 +138,199 @@ public class PowerMessage implements Pageable {
         return this;
     }
 
-    public PowerMessage then(Object object) {
-        snippets.add(new PowerSnippet(object.toString()));
+    /**
+     * Begins construction of a new message snippet
+     *
+     * @param snippetContent Content to begin the new snippet with
+     * @return This object
+     */
+    public PowerMessage then(Object snippetContent) {
+        return then(new PowerSnippet(snippetContent.toString()));
+    }
+
+    /**
+     * Adds a new snippet to a PowerMessage
+     *
+     * @param snippet Snippet to add
+     * @return This object
+     */
+    public PowerMessage then(PowerSnippet snippet) {
+        snippets.add(snippet);
         modify();
         return this;
     }
 
+    /**
+     * Adds a colour to the current snippet of text
+     *
+     * @param colour Colour to add
+     * @return This object
+     */
     public PowerMessage colour(ChatColor colour) {
         modify().withColours(colour);
         return this;
     }
 
+    /**
+     * Adds colours to the current snippet of text
+     *
+     * @param colours Colours to add
+     * @return This object
+     */
+    public PowerMessage colours(ChatColor... colours) {
+        modify().withColours(colours);
+        return this;
+    }
+
+    /**
+     * Adds a file event to a PowerMessage
+     * </p>
+     * Opens a file for the player that clicks the message, where the file path is relative to their computer only
+     *
+     * @param relativePath Path of the file to open
+     * @return This object
+     */
     public PowerMessage file(String relativePath) {
         modify().withEvent("click", "open_file", relativePath);
         return this;
     }
 
+    /**
+     * Adds a link event to a PowerMessage
+     * </p>
+     * sOpen a specific URL link when clicked
+     *
+     * @param urlLink URL link to open
+     * @return This object
+     */
     public PowerMessage link(String urlLink) {
         modify().withEvent("click", "open_url", urlLink);
         return this;
     }
 
+    /**
+     * Adds a suggest event to a PowerMessage
+     * </p>
+     * Auto-fills a certain command to the clicker's chat box
+     *
+     * @param commandToSuggest Command to suggest when clicked
+     * @return This object
+     */
     public PowerMessage suggest(String commandToSuggest) {
         modify().withEvent("click", "suggest_command", commandToSuggest);
         return this;
     }
 
+    /**
+     * Adds a perform event to a PowerMessage
+     * </p>
+     * Performs a command on behalf of the player that clicked
+     *
+     * @param commandToPerform Command to perform when clicked
+     * @return This object
+     */
     public PowerMessage perform(String commandToPerform) {
         modify().withEvent("click", "run_command", commandToPerform);
         return this;
     }
 
+    /**
+     * Adds an achievement tooltip to a PowerMessage
+     * </p>
+     * Displays an achievement to the viewer when the message is hovered over
+     *
+     * @param achievementName Name of the achievement to show
+     * @return This object
+     */
     public PowerMessage achievementTooltip(String achievementName) {
         modify().withEvent("hover", "show_achievement", "achievement." + achievementName);
         return this;
     }
 
+    /**
+     * Adds an item tooltip to a PowerMessage
+     * </p>
+     * Displays an item to the viewer when the message is hovered over
+     *
+     * @param itemJson JSON value of the item to add
+     * @return This object
+     */
     public PowerMessage itemTooltip(String itemJson) {
         modify().withEvent("hover", "show_item", itemJson);
         return this;
     }
 
+    /**
+     * Adds an item tooltip to a PowerMessage
+     * </p>
+     * Displays an item to the viewer when the message is hovered over
+     *
+     * @param itemContent A group of strings to represent an item with a name and description
+     * @return This object
+     */
     public PowerMessage itemTooltip(String... itemContent) {
-        itemTooltip(ItemUtil.getItem(itemContent));
-        return this;
+        return itemTooltip(ItemUtil.getItem(itemContent));
     }
 
+    /**
+     * Adds a tooltip to a PowerMessage
+     * </p>
+     * Displays a tooltip message to the viewer when the message is hovered over
+     *
+     * @param content Message to show when hovered over
+     * @return This object
+     */
     public PowerMessage tooltip(String content) {
-        tooltip(content.split("\\n"));
-        return this;
+        return tooltip(content.split("\\n"));
     }
 
+    /**
+     * Adds a tooltip to a PowerMessage
+     * </p>
+     * Displays a multiline or single-line tooltip message to the viewer when the message is hovered over
+     *
+     * @param content Message to show when hovered over
+     * @return This object
+     */
     public PowerMessage tooltip(String... content) {
         if (content.length == 1) {
             modify().withEvent("hover", "show_text", content[0]);
         } else {
-            itemTooltip(multilineTooltip(content));
+            StringWriter stringWriter = new StringWriter();
+            JsonWriter writer = new JsonWriter(stringWriter);
+            try {
+                writer.beginObject().name("id").value(1);
+                writer.name("tag").beginObject().name("display").beginObject();
+                writer.name("Name").value("\\u00A7f" + content[0].replace("\"", "\\\""));
+                writer.name("Lore").beginArray();
+                for (int i = 1; i < content.length; i++) {
+                    final String line = content[i];
+                    writer.value(line.isEmpty() ? " " : line.replace("\"", "\\\""));
+                }
+                writer.endArray().endObject().endObject().endObject();
+            } catch (IOException e) {
+                throw new InvalidMessageException("Invalid tooltip", e);
+            } finally {
+                try {
+                    writer.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            itemTooltip(stringWriter.toString());
         }
         return this;
     }
 
-    public String multilineTooltip(String... content) {
-        StringWriter stringWriter = new StringWriter();
-        JsonWriter writer = new JsonWriter(stringWriter);
-        try {
-            writer.beginObject().name("id").value(1);
-            writer.name("tag").beginObject().name("display").beginObject();
-            writer.name("Name").value("\\u00A7f" + content[0].replace("\"", "\\\""));
-            writer.name("Lore").beginArray();
-            for (int i = 1; i < content.length; i++) {
-                final String line = content[i];
-                writer.value(line.isEmpty() ? " " : line.replace("\"", "\\\""));
-            }
-            writer.endArray().endObject().endObject().endObject();
-        } catch (IOException e) {
-            throw new InvalidMessageException("Invalid tooltip", e);
-        } finally {
-            try {
-                writer.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return stringWriter.toString();
-    }
-
+    /**
+     * Adds an item tooltip to a PowerMessage
+     * </p>
+     * Displays an item to the viewer when the message is hovered over
+     *
+     * @param itemStack ItemStack to show
+     * @return This object
+     */
     public PowerMessage itemTooltip(ItemStack itemStack) {
         Reflection r = new Reflection();
         Object nmsCopy = r.reflect(CRAFT_ITEMSTACK).getSafeMethod("asNMSCopy", ItemStack.class).getAccessor().invokeStatic(itemStack);
@@ -196,12 +338,28 @@ public class PowerMessage implements Pageable {
         return itemTooltip(nbtData.toString());
     }
 
+    /**
+     * Adds an achievement tooltip to a PowerMessage
+     * </p>
+     * Displays an achievement to the viewer when the message is hovered over
+     *
+     * @param which Achievement to show
+     * @return This object
+     */
     public PowerMessage achievementTooltip(Achievement which) {
         Reflection r = new Reflection();
         Object achievement = r.reflect(CRAFT_STATISTIC).getSafeMethod("getNMSAchievement", Achievement.class).getAccessor().invokeStatic(which);
         return achievementTooltip((String) r.reflect(achievement.getClass()).getSafeFieldByNameAndType("name", String.class).getAccessor().get(achievement));
     }
 
+    /**
+     * Adds a statistic tooltip to a PowerMessage
+     * </p>
+     * Displays a statistic to the viewer when the message is hovered over
+     *
+     * @param which Achievement to show
+     * @return This object
+     */
     public PowerMessage statisticTooltip(Statistic which) {
         if (which.getType() != Statistic.Type.UNTYPED) {
             throw new IllegalArgumentException("That statistic requires an additional " + which.getType() + " parameter!");
@@ -212,6 +370,15 @@ public class PowerMessage implements Pageable {
         return achievementTooltip((String) r.reflect(achievement.getClass()).getSafeFieldByNameAndType("name", String.class).getAccessor().get(achievement));
     }
 
+    /**
+     * Adds an item statistic tooltip to a PowerMessage
+     * </p>
+     * Displays a statistic to the viewer when the message is hovered over
+     *
+     * @param which Statistic to show
+     * @param item Item to show
+     * @return This object
+     */
     public PowerMessage statisticTooltip(Statistic which, Material item) {
         if (which.getType() == Statistic.Type.UNTYPED) {
             throw new IllegalArgumentException("That statistic requires no additional parameter!");
@@ -226,6 +393,15 @@ public class PowerMessage implements Pageable {
         return achievementTooltip((String) r.reflect(achievement.getClass()).getSafeFieldByNameAndType("name", String.class).getAccessor().get(achievement));
     }
 
+    /**
+     * Adds an entity statistic tooltip to a PowerMessage
+     * </p>
+     * Displays a statistic to the viewer when the message is hovered over
+     *
+     * @param which Statistic to show
+     * @param entity Entity type to show
+     * @return This object
+     */
     public PowerMessage statisticTooltip(Statistic which, EntityType entity) {
         if (which.getType() == Statistic.Type.UNTYPED) {
             throw new IllegalArgumentException("That statistic requires no additional parameter!");
@@ -240,27 +416,31 @@ public class PowerMessage implements Pageable {
         return achievementTooltip((String) r.reflect(achievement.getClass()).getSafeFieldByNameAndType("name", String.class).getAccessor().get(achievement));
     }
 
+    /**
+     * Gets a copy of the snippets in a PowerMessage
+     * </p>
+     * Editing this list will not change the content of the original PowerMessage
+     * @return List of snippets in a PowerMessage
+     */
     public ArrayList<PowerSnippet> getSnippets() {
         return new ArrayList<>(snippets);
     }
 
+    /**
+     * Gets a snippet at a particular index
+     *
+     * @param index Index to retrieve
+     * @return A particular snippet in a PowerMessage
+     */
     public PowerSnippet getSnippet(int index) {
         return snippets.get(index);
     }
 
-    private PowerSnippet lastSnippet() {
-        return getSnippet(snippets.size() - 1);
-    }
-
-    private PowerSnippet modify() {
-        this.convertedToJson = false;
-        return lastSnippet();
-    }
-
-    public boolean isConvertedToJson() {
-        return convertedToJson;
-    }
-
+    /**
+     * Converts a PowerMessage to raw JSON, ready to be sent to a player
+     *
+     * @return Raw JSON to represent a PowerMessage
+     */
     public String toJson() {
         if (!isConvertedToJson() || rawJson == null) {
             StringWriter stringWriter = new StringWriter();
@@ -282,6 +462,19 @@ public class PowerMessage implements Pageable {
         }
 
         return rawJson;
+    }
+
+    private PowerSnippet lastSnippet() {
+        return getSnippet(snippets.size() - 1);
+    }
+
+    private PowerSnippet modify() {
+        this.convertedToJson = false;
+        return lastSnippet();
+    }
+
+    private boolean isConvertedToJson() {
+        return convertedToJson;
     }
 
     protected JsonWriter write(JsonWriter writer) throws IOException {
