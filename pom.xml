@@ -45,10 +45,10 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- SimpleUtils -->
+        <!-- Commodus -->
         <dependency>
             <groupId>com.dsh105</groupId>
-            <artifactId>SimpleUtils</artifactId>
+            <artifactId>Commodus</artifactId>
             <version>1.0.0</version>
             <scope>provided</scope>
         </dependency>
