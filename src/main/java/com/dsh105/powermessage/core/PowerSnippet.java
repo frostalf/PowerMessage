@@ -18,16 +18,57 @@
 package com.dsh105.powermessage.core;
 
 import com.dsh105.powermessage.action.ActionEvent;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.ImmutableBiMap;
 import org.bukkit.ChatColor;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.craftbukkit.libs.com.google.gson.stream.JsonWriter;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Represents a particular snippet of a {@link com.dsh105.powermessage.core.PowerMessage}
  */
-public class PowerSnippet {
+public class PowerSnippet implements JsonWritable, Cloneable, ConfigurationSerializable {
+
+    static {
+        ConfigurationSerialization.registerClass(PowerSnippet.class);
+    }
+
+    private static final String SERIALIZED_TEXT = "text";
+    private static final String SERIALIZED_COLOURS = "colours";
+    private static final String SERIALIZED_ACTION_EVENTS = "actionEvents";
+
+    private static final BiMap<ChatColor, String> STYLE_TO_NAME_MAP;
+
+    static {
+        ImmutableBiMap.Builder<ChatColor, String> builder = ImmutableBiMap.builder();
+        for (final ChatColor style : ChatColor.values()) {
+            if (!style.isFormat()) {
+                continue;
+            }
+
+            String styleName;
+            switch (style) {
+                case MAGIC:
+                    styleName = "obfuscated";
+                    break;
+                case UNDERLINE:
+                    styleName = "underlined";
+                    break;
+                default:
+                    styleName = style.name().toLowerCase();
+                    break;
+            }
+
+            builder.put(style, styleName);
+        }
+        STYLE_TO_NAME_MAP = builder.build();
+    }
 
     private String text;
     private ArrayList<ChatColor> colours = new ArrayList<>();
@@ -122,32 +163,49 @@ public class PowerSnippet {
         return this;
     }
 
-    protected JsonWriter write(JsonWriter writer) throws IOException {
+    @Override
+    public Map<String, Object> serialize() {
+        Map<String, Object> serialized = new HashMap<>();
+        serialized.put(SERIALIZED_TEXT, text);
+        serialized.put(SERIALIZED_COLOURS, colours);
+        serialized.put(SERIALIZED_ACTION_EVENTS, actionEvents);
+        return serialized;
+    }
+
+    public static PowerSnippet deserialize(Map<String, Object> serialized) {
+        if (!serialized.containsKey(SERIALIZED_TEXT)) {
+            throw new IllegalArgumentException("Failed to deserialize PowerSnippet from provided data");
+        }
+        PowerSnippet snippet = new PowerSnippet((String) serialized.get(SERIALIZED_TEXT));
+        snippet.colours = (ArrayList<ChatColor>) serialized.get(SERIALIZED_COLOURS);
+        snippet.actionEvents = (ArrayList<ActionEvent>) serialized.get(SERIALIZED_ACTION_EVENTS);
+        return snippet;
+    }
+
+    @Override
+    public JsonWriter writeJson(JsonWriter writer) throws IOException {
         writer.beginObject().name("text").value(text);
 
         for (ChatColor colour : colours) {
             if (colour.isFormat()) {
-                String formatName;
-                switch (colour) {
-                    case MAGIC:
-                        formatName = "obfuscated";
-                        break;
-                    case UNDERLINE:
-                        formatName = "underlined";
-                        break;
-                    default:
-                        formatName = colour.name().toLowerCase();
-                }
-                writer.name(formatName).value(true);
+                writer.name(STYLE_TO_NAME_MAP.get(colour)).value(true);
             } else {
                 writer.name("color").value(colour.name().toLowerCase());
             }
         }
 
         for (ActionEvent event : actionEvents) {
-            event.write(writer);
+            event.writeJson(writer);
         }
 
         return writer.endObject();
+    }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        PowerSnippet snippet = (PowerSnippet) super.clone();
+        snippet.colours = (ArrayList<ChatColor>) colours.clone();
+        snippet.actionEvents = (ArrayList<ActionEvent>) actionEvents.clone();
+        return snippet;
     }
 }

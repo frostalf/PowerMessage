@@ -19,6 +19,7 @@ package com.dsh105.powermessage.core;
 
 import com.captainbern.minecraft.reflection.MinecraftReflection;
 import com.captainbern.reflection.Reflection;
+import com.dsh105.commodus.StringUtil;
 import com.dsh105.powermessage.exception.InvalidMessageException;
 import com.dsh105.commodus.ItemUtil;
 import com.dsh105.commodus.paginator.Pageable;
@@ -27,6 +28,8 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Statistic;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.craftbukkit.libs.com.google.gson.stream.JsonWriter;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -35,11 +38,20 @@ import org.bukkit.inventory.ItemStack;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Represents a message that internally manipulates JSON to allow the sending of fancy, interactive messages to players
  */
-public class PowerMessage implements Pageable {
+public class PowerMessage implements Pageable, JsonWritable, Cloneable, ConfigurationSerializable, Iterable<PowerSnippet> {
+
+    static {
+        ConfigurationSerialization.registerClass(PowerMessage.class);
+    }
+
+    private static final String SERIALIZED_SNIPPETS = "snippets";
 
     private static Class<?> NBT_TAG_COMPOUND = null;
     private static Class<?> CRAFT_ITEMSTACK = null;
@@ -56,7 +68,7 @@ public class PowerMessage implements Pageable {
         }
     }
 
-    private final ArrayList<PowerSnippet> snippets = new ArrayList<>();
+    private ArrayList<PowerSnippet> snippets = new ArrayList<>();
     private String rawJson;
     private boolean convertedToJson;
 
@@ -137,6 +149,15 @@ public class PowerMessage implements Pageable {
             send(player);
         }
         return this;
+    }
+
+    public PowerMessage edit(String snippetContent) {
+        modify().setText(snippetContent);
+        return this;
+    }
+
+    public PowerMessage then(String snippetContent) {
+        return then((Object) snippetContent);
     }
 
     /**
@@ -236,6 +257,23 @@ public class PowerMessage implements Pageable {
     }
 
     /**
+     * Adds a tooltip to a PowerMessage
+     * </p>
+     * Displays a multiline or single-line tooltip message to the viewer when the message is hovered over
+     *
+     * @param content Message to show when hovered over
+     * @return This object
+     */
+    public PowerMessage tooltip(String... content) {
+        if (content == null || content.length <= 0) {
+            throw new InvalidMessageException("Content cannot be empty");
+        }
+
+        modify().withEvent("hover", "show_text", content.length == 1 ? content[0] : StringUtil.combineArray(0, "\\n", content));
+        return this;
+    }
+
+    /**
      * Adds an achievement tooltip to a PowerMessage
      * </p>
      * Displays an achievement to the viewer when the message is hovered over
@@ -271,57 +309,6 @@ public class PowerMessage implements Pageable {
      */
     public PowerMessage itemTooltip(String... itemContent) {
         return itemTooltip(ItemUtil.getItem(itemContent));
-    }
-
-    /**
-     * Adds a tooltip to a PowerMessage
-     * </p>
-     * Displays a tooltip message to the viewer when the message is hovered over
-     *
-     * @param content Message to show when hovered over
-     * @return This object
-     */
-    public PowerMessage tooltip(String content) {
-        return tooltip(content.split("\\n"));
-    }
-
-    /**
-     * Adds a tooltip to a PowerMessage
-     * </p>
-     * Displays a multiline or single-line tooltip message to the viewer when the message is hovered over
-     *
-     * @param content Message to show when hovered over
-     * @return This object
-     */
-    public PowerMessage tooltip(String... content) {
-        if (content.length == 1) {
-            modify().withEvent("hover", "show_text", content[0]);
-        } else {
-            StringWriter stringWriter = new StringWriter();
-            JsonWriter writer = new JsonWriter(stringWriter);
-            try {
-                writer.beginObject().name("id").value(1);
-                writer.name("tag").beginObject().name("display").beginObject();
-                writer.name("Name").value("\\u00A7f" + content[0].replace("\"", "\\\""));
-                writer.name("Lore").beginArray();
-                for (int i = 1; i < content.length; i++) {
-                    final String line = content[i];
-                    writer.value(line.isEmpty() ? " " : line.replace("\"", "\\\""));
-                }
-                writer.endArray().endObject().endObject().endObject();
-            } catch (IOException e) {
-                throw new InvalidMessageException("Invalid tooltip", e);
-            } finally {
-                try {
-                    writer.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            itemTooltip(stringWriter.toString());
-        }
-        return this;
     }
 
     /**
@@ -438,6 +425,42 @@ public class PowerMessage implements Pageable {
         return snippets.get(index);
     }
 
+    private PowerSnippet lastSnippet() {
+        return getSnippet(snippets.size() - 1);
+    }
+
+    private PowerSnippet modify() {
+        this.convertedToJson = false;
+        return lastSnippet();
+    }
+
+    private boolean isConvertedToJson() {
+        return convertedToJson;
+    }
+
+    @Override
+    public Iterator<PowerSnippet> iterator() {
+        return snippets.iterator();
+    }
+
+    @Override
+    public Map<String, Object> serialize() {
+        Map<String, Object> serialized = new HashMap<>();
+        serialized.put(SERIALIZED_SNIPPETS, snippets);
+        return serialized;
+    }
+
+    public static PowerMessage deserialize(Map<String, Object> serialized) {
+        if (!serialized.containsKey(SERIALIZED_SNIPPETS)) {
+            throw new IllegalArgumentException("Failed to deserialize PowerMessage from provided data");
+        }
+        PowerMessage powerMessage = new PowerMessage();
+        powerMessage.snippets = (ArrayList<PowerSnippet>) serialized.get(SERIALIZED_SNIPPETS);
+        return powerMessage;
+    }
+
+    // TODO: fromJson
+
     /**
      * Converts a PowerMessage to raw JSON, ready to be sent to a player
      *
@@ -449,7 +472,7 @@ public class PowerMessage implements Pageable {
             JsonWriter writer = new JsonWriter(stringWriter);
 
             try {
-                write(writer);
+                writeJson(writer);
             } catch (IOException e) {
                 throw new InvalidMessageException("Invalid message", e);
             } finally {
@@ -466,29 +489,26 @@ public class PowerMessage implements Pageable {
         return rawJson;
     }
 
-    private PowerSnippet lastSnippet() {
-        return getSnippet(snippets.size() - 1);
-    }
-
-    private PowerSnippet modify() {
-        this.convertedToJson = false;
-        return lastSnippet();
-    }
-
-    private boolean isConvertedToJson() {
-        return convertedToJson;
-    }
-
-    protected JsonWriter write(JsonWriter writer) throws IOException {
+    @Override
+    public JsonWriter writeJson(JsonWriter writer) throws IOException {
         if (snippets.size() == 1) {
-            lastSnippet().write(writer);
+            lastSnippet().writeJson(writer);
         } else {
             writer.beginObject().name("text").value("").name("extra").beginArray();
             for (PowerSnippet snippet : snippets) {
-                snippet.write(writer);
+                snippet.writeJson(writer);
             }
             writer.endArray().endObject();
         }
         return writer;
+    }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        PowerMessage cloned = (PowerMessage) super.clone();
+        for (int i = 0; i < this.getSnippets().size(); i++) {
+            cloned.snippets.add(this.getSnippet(i));
+        }
+        return cloned;
     }
 }

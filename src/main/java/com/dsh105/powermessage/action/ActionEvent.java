@@ -17,6 +17,7 @@
 
 package com.dsh105.powermessage.action;
 
+import com.dsh105.powermessage.core.JsonWritable;
 import org.apache.commons.lang.Validate;
 import org.bukkit.craftbukkit.libs.com.google.gson.stream.JsonWriter;
 
@@ -25,7 +26,7 @@ import java.io.IOException;
 /**
  * Represents an event that can be called by a {@link com.dsh105.powermessage.core.PowerMessage}
  */
-public abstract class ActionEvent {
+public abstract class ActionEvent implements JsonWritable {
 
     private String actionType;
     private String name;
@@ -62,16 +63,12 @@ public abstract class ActionEvent {
         return this;
     }
 
-    public JsonWriter write(JsonWriter writer) {
+    @Override
+    public JsonWriter writeJson(JsonWriter writer) throws IOException {
         Validate.notEmpty(name, "Action name cannot be empty!");
         Validate.notEmpty(data, "Action data cannot be empty!");
-        try {
-            writer.name(actionType + "Event").beginObject().name("action").value(this.name).name("value").value(this.data).endObject();
 
-            return writer.endObject();
-        } catch (IOException e) {
-            e.printStackTrace();
-            return writer;
-        }
+        writer.name(actionType + "Event").beginObject().name("action").value(this.name).name("value").value(this.data).endObject();
+        return writer.endObject();
     }
 }
