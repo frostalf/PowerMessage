@@ -47,25 +47,19 @@ import java.util.Map;
  */
 public class PowerMessage implements Pageable, JsonWritable, Cloneable, ConfigurationSerializable, Iterable<PowerSnippet> {
 
-    static {
-        ConfigurationSerialization.registerClass(PowerMessage.class);
-    }
-
     private static final String SERIALIZED_SNIPPETS = "snippets";
 
-    private static Class<?> NBT_TAG_COMPOUND = null;
-    private static Class<?> CRAFT_ITEMSTACK = null;
-    private static Class<?> CRAFT_STATISTIC = null;
+    private static Class<?> NBT_TAG_COMPOUND;
+    private static Class<?> CRAFT_ITEMSTACK;
+    private static Class<?> CRAFT_STATISTIC;
 
 
     static {
-        try {
-            NBT_TAG_COMPOUND = MinecraftReflection.getMinecraftClass("NBTTagCompound");
-            CRAFT_ITEMSTACK = MinecraftReflection.getCraftBukkitClass("inventory.CraftItemStack");
-            CRAFT_STATISTIC = MinecraftReflection.getCraftBukkitClass("CraftStatistic");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
+        ConfigurationSerialization.registerClass(PowerMessage.class);
+
+        NBT_TAG_COMPOUND = MinecraftReflection.getMinecraftClass("NBTTagCompound");
+        CRAFT_ITEMSTACK = MinecraftReflection.getCraftBukkitClass("inventory.CraftItemStack");
+        CRAFT_STATISTIC = MinecraftReflection.getCraftBukkitClass("CraftStatistic");
     }
 
     private ArrayList<PowerSnippet> snippets = new ArrayList<>();
