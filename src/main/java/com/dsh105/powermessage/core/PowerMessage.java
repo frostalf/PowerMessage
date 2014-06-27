@@ -17,8 +17,16 @@
 
 package com.dsh105.powermessage.core;
 
+import com.captainbern.minecraft.protocol.PacketType;
+import com.captainbern.minecraft.reflection.MinecraftMethods;
 import com.captainbern.minecraft.reflection.MinecraftReflection;
+import com.captainbern.minecraft.wrapper.WrappedPacket;
+import com.captainbern.minecraft.wrapper.nbt.NbtFactory;
+import com.captainbern.minecraft.wrapper.nbt.NbtType;
 import com.captainbern.reflection.Reflection;
+import com.captainbern.reflection.accessor.MethodAccessor;
+import com.captainbern.reflection.matcher.Matchers;
+import com.dsh105.commodus.ServerUtil;
 import com.dsh105.commodus.StringUtil;
 import com.dsh105.powermessage.exception.InvalidMessageException;
 import com.dsh105.commodus.ItemUtil;
@@ -47,8 +55,12 @@ import java.util.Map;
  */
 public class PowerMessage implements Pageable, JsonWritable, Cloneable, ConfigurationSerializable, Iterable<PowerSnippet> {
 
+    private static final MethodAccessor CHAT_FROM_JSON;
+
     private static final String SERIALIZED_SNIPPETS = "snippets";
 
+    private static Class<?> CHAT_SERIALIZER;
+    private static Class<?> I_CHAT_BASE_COMPONENT;
     private static Class<?> NBT_TAG_COMPOUND;
     private static Class<?> CRAFT_ITEMSTACK;
     private static Class<?> CRAFT_STATISTIC;
@@ -57,9 +69,13 @@ public class PowerMessage implements Pageable, JsonWritable, Cloneable, Configur
     static {
         ConfigurationSerialization.registerClass(PowerMessage.class);
 
-        NBT_TAG_COMPOUND = MinecraftReflection.getMinecraftClass("NBTTagCompound");
-        CRAFT_ITEMSTACK = MinecraftReflection.getCraftBukkitClass("inventory.CraftItemStack");
+        CHAT_SERIALIZER = MinecraftReflection.getMinecraftClass("ChatSerializer");
+        I_CHAT_BASE_COMPONENT = MinecraftReflection.getMinecraftClass("IChatBaseComponent");
+        NBT_TAG_COMPOUND = NbtFactory.createTag(NbtType.TAG_COMPOUND).getHandle().getClass();
+        CRAFT_ITEMSTACK = MinecraftReflection.getCraftItemStackClass();
         CRAFT_STATISTIC = MinecraftReflection.getCraftBukkitClass("CraftStatistic");
+
+        CHAT_FROM_JSON = new Reflection().reflect(CHAT_SERIALIZER).getSafeMethods(Matchers.withReturnType(I_CHAT_BASE_COMPONENT), Matchers.withArguments(new Class[] {String.class})).get(0).getAccessor();
     }
 
     private ArrayList<PowerSnippet> snippets = new ArrayList<>();
@@ -128,7 +144,13 @@ public class PowerMessage implements Pageable, JsonWritable, Cloneable, Configur
      * @return This object
      */
     public PowerMessage send(Player player) {
-        // TODO: Fancy packet stuff
+        if (ServerUtil.MC_VERSION_NUMERIC >= 170) {
+            WrappedPacket chat = new WrappedPacket(PacketType.Play.Server.CHAT);
+            chat.getAccessor((Class<Object>) I_CHAT_BASE_COMPONENT).write(0, CHAT_FROM_JSON.invokeStatic(toJson()));
+            MinecraftMethods.sendPacket(player, chat.getHandle());
+        } else {
+            player.sendMessage(getContent());
+        }
         return this;
     }
 
