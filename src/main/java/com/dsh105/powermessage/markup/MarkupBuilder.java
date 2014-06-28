@@ -18,6 +18,7 @@
 package com.dsh105.powermessage.markup;
 
 import com.dsh105.powermessage.core.PowerMessage;
+import org.bukkit.ChatColor;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -45,7 +46,7 @@ public class MarkupBuilder {
      * @return This builder
      */
     public MarkupBuilder withText(String raw) {
-        this.raw = raw;
+        this.raw = ChatColor.translateAlternateColorCodes('&', raw);
         return this;
     }
 
