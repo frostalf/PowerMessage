@@ -26,7 +26,7 @@ import java.io.IOException;
 /**
  * Represents an event that can be called by a {@link com.dsh105.powermessage.core.PowerMessage}
  */
-public abstract class ActionEvent implements JsonWritable {
+public class ActionEvent implements JsonWritable {
 
     private String actionType;
     private String name;

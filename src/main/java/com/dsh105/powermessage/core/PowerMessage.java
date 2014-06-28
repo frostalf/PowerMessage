@@ -115,6 +115,7 @@ public class PowerMessage implements Pageable, JsonWritable, Cloneable, Configur
      * @param sender Whom to send the message to
      * @return This object
      */
+    @Override
     public PowerMessage send(CommandSender sender) {
         if (sender instanceof Player) {
             send((Player) sender);

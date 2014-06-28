@@ -35,10 +35,6 @@ import java.util.Map;
  */
 public class PowerSnippet implements JsonWritable, Cloneable, ConfigurationSerializable {
 
-    static {
-        ConfigurationSerialization.registerClass(PowerSnippet.class);
-    }
-
     private static final String SERIALIZED_TEXT = "text";
     private static final String SERIALIZED_COLOURS = "colours";
     private static final String SERIALIZED_ACTION_EVENTS = "actionEvents";
@@ -46,6 +42,8 @@ public class PowerSnippet implements JsonWritable, Cloneable, ConfigurationSeria
     private static final BiMap<ChatColor, String> STYLE_TO_NAME_MAP;
 
     static {
+        ConfigurationSerialization.registerClass(PowerSnippet.class);
+
         ImmutableBiMap.Builder<ChatColor, String> builder = ImmutableBiMap.builder();
         for (final ChatColor style : ChatColor.values()) {
             if (!style.isFormat()) {
@@ -149,17 +147,7 @@ public class PowerSnippet implements JsonWritable, Cloneable, ConfigurationSeria
      * @return This object
      */
     public PowerSnippet withEvent(String eventType, String eventName, String eventData) {
-        this.actionEvents.add(new ActionEvent(eventType) {
-            @Override
-            public ActionEvent withName(String name) {
-                return super.withName(name);
-            }
-
-            @Override
-            public ActionEvent withData(String data) {
-                return super.withData(data);
-            }
-        }.withName(eventName).withData(eventData));
+        this.actionEvents.add(new ActionEvent(eventType).withName(eventName).withData(eventData));
         return this;
     }
 
