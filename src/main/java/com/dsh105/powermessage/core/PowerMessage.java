@@ -291,6 +291,25 @@ public class PowerMessage implements Pageable, JsonWritable, Cloneable, Configur
     }
 
     /**
+     * Adds a tooltip to a PowerMessage
+     * <p/>
+     * Displays a multiline or single-line tooltip message to the viewer when the message is hovered over
+     * <p/>
+     * The provided PowerMessage will be stripped of all events before being added
+     *
+     * @param powerMessage Content to show when hovered over
+     * @return This object
+     */
+    public PowerMessage tooltip(PowerMessage powerMessage) {
+        if (powerMessage.getContent() == null || powerMessage.getContent().length() <= 0) {
+            throw new InvalidMessageException("Content cannot be empty");
+        }
+
+        modify().withEvent("hover", "show_text", powerMessage.getContent());
+        return this;
+    }
+
+    /**
      * Adds an achievement tooltip to a PowerMessage
      * </p>
      * Displays an achievement to the viewer when the message is hovered over
