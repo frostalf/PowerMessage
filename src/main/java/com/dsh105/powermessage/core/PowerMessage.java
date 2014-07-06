@@ -286,7 +286,7 @@ public class PowerMessage implements Pageable, JsonWritable, Cloneable, Configur
             throw new InvalidMessageException("Content cannot be empty");
         }
 
-        modify().withEvent("hover", "show_text", content.length == 1 ? content[0] : StringUtil.combineArray(0, "\\n", content));
+        modify().withEvent("hover", "show_text", content.length == 1 ? content[0] : StringUtil.combineArray(0, "\n", content));
         return this;
     }
 
