@@ -20,7 +20,7 @@
             <url>http://repo.bukkit.org/content/groups/public/</url>
         </repository>
 
-        <!-- SimpleUtils -->
+        <!-- Commodus -->
         <repository>
             <id>hawk-repo</id>
             <url>http://ci.hawkfalcon.com/plugin/repository/everything/</url>
@@ -33,7 +33,7 @@
         <dependency>
             <groupId>org.bukkit</groupId>
             <artifactId>bukkit</artifactId>
-            <version>1.7.9-R0.2-SNAPSHOT</version>
+            <version>1.7.9-R0.3-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
 
@@ -41,7 +41,7 @@
         <dependency>
             <groupId>org.bukkit</groupId>
             <artifactId>craftbukkit</artifactId>
-            <version>1.7.9-R0.2-SNAPSHOT</version>
+            <version>1.7.9-R0.3-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
 
