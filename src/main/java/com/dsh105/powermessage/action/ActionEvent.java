@@ -63,12 +63,39 @@ public class ActionEvent implements JsonWritable {
         return this;
     }
 
+    /**
+     * Gets the type of the action
+     *
+     * @return Type of action
+     */
+    public String getActionType() {
+        return actionType;
+    }
+
+    /**
+     * Gets the name of the action
+     *
+     * @return Name of the action
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Gets the data of the action
+     *
+     * @return Data of the action
+     */
+    public String getData() {
+        return data;
+    }
+
     @Override
     public JsonWriter writeJson(JsonWriter writer) throws IOException {
         Validate.notEmpty(name, "Action name cannot be empty!");
         Validate.notEmpty(data, "Action data cannot be empty!");
 
         writer.name(actionType + "Event").beginObject().name("action").value(this.name).name("value").value(this.data).endObject();
-        return writer.endObject();
+        return writer;
     }
 }

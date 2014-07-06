@@ -26,9 +26,7 @@ import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.craftbukkit.libs.com.google.gson.stream.JsonWriter;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Represents a particular snippet of a {@link com.dsh105.powermessage.core.PowerMessage}
@@ -78,7 +76,7 @@ public class PowerSnippet implements JsonWritable, Cloneable, ConfigurationSeria
      * @param text Textual content to be included in the snippet
      */
     public PowerSnippet(String text) {
-        this.text = text;
+        this.setText(text);
     }
 
     /**
@@ -99,8 +97,8 @@ public class PowerSnippet implements JsonWritable, Cloneable, ConfigurationSeria
      *
      * @return Colours in a snippet
      */
-    public ArrayList<ChatColor> getColours() {
-        return new ArrayList<>(colours);
+    public List<ChatColor> getColours() {
+        return Collections.unmodifiableList(this.colours);
     }
 
     /**
@@ -108,8 +106,8 @@ public class PowerSnippet implements JsonWritable, Cloneable, ConfigurationSeria
      *
      * @return Action events of a snippet
      */
-    public ArrayList<ActionEvent> getActionEvents() {
-        return new ArrayList<>(actionEvents);
+    public List<ActionEvent> getActionEvents() {
+        return Collections.unmodifiableList(this.actionEvents);
     }
 
     /**
@@ -118,10 +116,8 @@ public class PowerSnippet implements JsonWritable, Cloneable, ConfigurationSeria
      * @param colours Colours to add
      * @return This object
      */
-    public PowerSnippet withColours(ChatColor... colours) {
-        for (ChatColor c : colours) {
-            this.colours.add(c);
-        }
+    public PowerSnippet withColour(ChatColor... colours) {
+        Collections.addAll(this.colours, colours);
         return this;
     }
 
@@ -133,7 +129,7 @@ public class PowerSnippet implements JsonWritable, Cloneable, ConfigurationSeria
      */
     public PowerSnippet withEvents(ActionEvent... events) {
         for (ActionEvent event : events) {
-            this.actionEvents.add(event);
+            this.withEvent(event.getActionType(), event.getName(), event.getData());
         }
         return this;
     }
@@ -147,8 +143,36 @@ public class PowerSnippet implements JsonWritable, Cloneable, ConfigurationSeria
      * @return This object
      */
     public PowerSnippet withEvent(String eventType, String eventName, String eventData) {
-        this.actionEvents.add(new ActionEvent(eventType).withName(eventName).withData(eventData));
+        ActionEvent event = new ActionEvent(eventType).withName(eventName).withData(eventData);
+        ActionEvent existing = getActionEvent(eventType, eventName);
+        if (existing == null) {
+            this.actionEvents.add(event);
+            return this;
+        }
+
+        StringBuilder builder = new StringBuilder()
+                .append(existing.getData())
+                .append("\n")
+                .append(event.getData());
+
+        this.actionEvents.add(new ActionEvent(eventType).withName(eventName).withData(builder.toString()));
         return this;
+    }
+
+    /**
+     * Gets an existing event that is represented by the given type and name
+     *
+     * @param eventType Type of event to search for
+     * @param eventName Name of event to search for
+     * @return Event if it exists, null if not
+     */
+    public ActionEvent getActionEvent(String eventType, String eventName) {
+        for (ActionEvent event : getActionEvents()) {
+            if (event.getActionType().equals(eventType) && event.getName().equals(eventName)) {
+                return event;
+            }
+        }
+        return null;
     }
 
     @Override
