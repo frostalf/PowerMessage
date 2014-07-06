@@ -79,7 +79,7 @@ public class PowerMessage implements Pageable, JsonWritable, Cloneable, Configur
         CRAFT_ITEMSTACK = MinecraftReflection.getCraftItemStackClass();
         CRAFT_STATISTIC = MinecraftReflection.getCraftBukkitClass("CraftStatistic");
 
-        CHAT_FROM_JSON = new Reflection().reflect(CHAT_SERIALIZER).getSafeMethods(Matchers.withReturnType(I_CHAT_BASE_COMPONENT), Matchers.withArguments(new Class[] {String.class})).get(0).getAccessor();
+        CHAT_FROM_JSON = new Reflection().reflect(CHAT_SERIALIZER).getSafeMethods(Matchers.withReturnType(I_CHAT_BASE_COMPONENT), Matchers.withArguments(new Class[]{String.class})).get(0).getAccessor();
     }
 
     private ArrayList<PowerSnippet> snippets = new ArrayList<>();
@@ -239,7 +239,7 @@ public class PowerMessage implements Pageable, JsonWritable, Cloneable, Configur
 
     /**
      * Adds a file event to a PowerMessage
-     * </p>
+     * <p/>
      * Opens a file for the player that clicks the message, where the file path is relative to their computer only
      *
      * @param relativePath Path of the file to open
@@ -252,7 +252,7 @@ public class PowerMessage implements Pageable, JsonWritable, Cloneable, Configur
 
     /**
      * Adds a link event to a PowerMessage
-     * </p>
+     * <p/>
      * sOpen a specific URL link when clicked
      *
      * @param urlLink URL link to open
@@ -265,7 +265,7 @@ public class PowerMessage implements Pageable, JsonWritable, Cloneable, Configur
 
     /**
      * Adds a suggest event to a PowerMessage
-     * </p>
+     * <p/>
      * Auto-fills a certain command to the clicker's chat box
      *
      * @param commandToSuggest Command to suggest when clicked
@@ -278,7 +278,7 @@ public class PowerMessage implements Pageable, JsonWritable, Cloneable, Configur
 
     /**
      * Adds a perform event to a PowerMessage
-     * </p>
+     * <p/>
      * Performs a command on behalf of the player that clicked
      *
      * @param commandToPerform Command to perform when clicked
@@ -291,7 +291,7 @@ public class PowerMessage implements Pageable, JsonWritable, Cloneable, Configur
 
     /**
      * Adds a tooltip to a PowerMessage
-     * </p>
+     * <p/>
      * Displays a multiline or single-line tooltip message to the viewer when the message is hovered over
      *
      * @param content Message to show when hovered over
@@ -327,7 +327,7 @@ public class PowerMessage implements Pageable, JsonWritable, Cloneable, Configur
 
     /**
      * Adds an achievement tooltip to a PowerMessage
-     * </p>
+     * <p/>
      * Displays an achievement to the viewer when the message is hovered over
      *
      * @param achievementName Name of the achievement to show
@@ -340,7 +340,7 @@ public class PowerMessage implements Pageable, JsonWritable, Cloneable, Configur
 
     /**
      * Adds an item tooltip to a PowerMessage
-     * </p>
+     * <p/>
      * Displays an item to the viewer when the message is hovered over
      *
      * @param itemJson JSON value of the item to add
@@ -353,7 +353,7 @@ public class PowerMessage implements Pageable, JsonWritable, Cloneable, Configur
 
     /**
      * Adds an item tooltip to a PowerMessage
-     * </p>
+     * <p/>
      * Displays an item to the viewer when the message is hovered over
      *
      * @param itemContent A group of strings to represent an item with a name and description
@@ -365,7 +365,7 @@ public class PowerMessage implements Pageable, JsonWritable, Cloneable, Configur
 
     /**
      * Adds an item tooltip to a PowerMessage
-     * </p>
+     * <p/>
      * Displays an item to the viewer when the message is hovered over
      *
      * @param itemStack ItemStack to show
@@ -380,7 +380,7 @@ public class PowerMessage implements Pageable, JsonWritable, Cloneable, Configur
 
     /**
      * Adds an achievement tooltip to a PowerMessage
-     * </p>
+     * <p/>
      * Displays an achievement to the viewer when the message is hovered over
      *
      * @param which Achievement to show
@@ -394,7 +394,7 @@ public class PowerMessage implements Pageable, JsonWritable, Cloneable, Configur
 
     /**
      * Adds a statistic tooltip to a PowerMessage
-     * </p>
+     * <p/>
      * Displays a statistic to the viewer when the message is hovered over
      *
      * @param which Achievement to show
@@ -412,7 +412,7 @@ public class PowerMessage implements Pageable, JsonWritable, Cloneable, Configur
 
     /**
      * Adds an item statistic tooltip to a PowerMessage
-     * </p>
+     * <p/>
      * Displays a statistic to the viewer when the message is hovered over
      *
      * @param which Statistic to show
@@ -435,7 +435,7 @@ public class PowerMessage implements Pageable, JsonWritable, Cloneable, Configur
 
     /**
      * Adds an entity statistic tooltip to a PowerMessage
-     * </p>
+     * <p/>
      * Displays a statistic to the viewer when the message is hovered over
      *
      * @param which  Statistic to show
@@ -458,7 +458,7 @@ public class PowerMessage implements Pageable, JsonWritable, Cloneable, Configur
 
     /**
      * Gets a copy of the snippets in a PowerMessage
-     * </p>
+     * <p/>
      * Editing this list will not change the content of the original PowerMessage
      *
      * @return List of snippets in a PowerMessage
