@@ -89,7 +89,7 @@ public class PowerSnippet implements JsonWritable, Cloneable, ConfigurationSeria
     }
 
     protected void setText(String text) {
-        this.text = text;
+        this.text = ChatColor.stripColor(text);
     }
 
     /**

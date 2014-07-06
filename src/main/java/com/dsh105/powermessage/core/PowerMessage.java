@@ -26,11 +26,11 @@ import com.captainbern.minecraft.wrapper.nbt.NbtType;
 import com.captainbern.reflection.Reflection;
 import com.captainbern.reflection.accessor.MethodAccessor;
 import com.captainbern.reflection.matcher.Matchers;
+import com.dsh105.commodus.ItemUtil;
 import com.dsh105.commodus.ServerUtil;
 import com.dsh105.commodus.StringUtil;
-import com.dsh105.powermessage.exception.InvalidMessageException;
-import com.dsh105.commodus.ItemUtil;
 import com.dsh105.commodus.paginator.Pageable;
+import com.dsh105.powermessage.exception.InvalidMessageException;
 import org.bukkit.Achievement;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -49,11 +49,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Represents a message that internally manipulates JSON to allow the sending of fancy, interactive messages to players
  */
 public class PowerMessage implements Pageable, JsonWritable, Cloneable, ConfigurationSerializable, Iterable<PowerSnippet> {
+
+    protected static final Pattern COLOUR_PATTERN = Pattern.compile(ChatColor.COLOR_CHAR + "([0-9A-FK-OR])", Pattern.CASE_INSENSITIVE);
 
     private static final MethodAccessor CHAT_FROM_JSON;
 
@@ -184,7 +188,30 @@ public class PowerMessage implements Pageable, JsonWritable, Cloneable, Configur
      * @return This object
      */
     public PowerMessage then(Object snippetContent) {
-        return then(new PowerSnippet(snippetContent.toString()));
+        String content = ChatColor.translateAlternateColorCodes('&', snippetContent.toString());
+        if (content.length() > 0) {
+            ArrayList<ChatColor> colours = new ArrayList<>();
+            Matcher colourMatcher = COLOUR_PATTERN.matcher(content);
+            int lastEnd = 0;
+            while (colourMatcher.find()) {
+                if (colourMatcher.start() > lastEnd) {
+                    then(new PowerSnippet(content.substring(lastEnd, colourMatcher.start()))).colour(colours.toArray(new ChatColor[0]));
+                }
+
+                ChatColor colour = ChatColor.getByChar(colourMatcher.group(1));
+                if (colour == ChatColor.RESET) {
+                    colours.clear();
+                } else {
+                    colours.add(colour);
+                }
+                lastEnd = colourMatcher.end();
+            }
+            if (lastEnd < (content.length() - 1)) {
+                then(new PowerSnippet(content.substring(lastEnd, content.length()))).colour(colours.toArray(new ChatColor[0]));
+            }
+        }
+
+        return this;
     }
 
     /**
@@ -200,24 +227,13 @@ public class PowerMessage implements Pageable, JsonWritable, Cloneable, Configur
     }
 
     /**
-     * Adds a colour to the current snippet of text
-     *
-     * @param colour Colour to add
-     * @return This object
-     */
-    public PowerMessage colour(ChatColor colour) {
-        modify().withColours(colour);
-        return this;
-    }
-
-    /**
      * Adds colours to the current snippet of text
      *
      * @param colours Colours to add
      * @return This object
      */
-    public PowerMessage colours(ChatColor... colours) {
-        modify().withColours(colours);
+    public PowerMessage colour(ChatColor... colours) {
+        modify().withColour(colours);
         return this;
     }
 
