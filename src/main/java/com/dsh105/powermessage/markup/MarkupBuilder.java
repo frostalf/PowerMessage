@@ -25,14 +25,14 @@ import java.util.regex.Pattern;
 
 /**
  * A very, very simple markup builder for JSON messages
- * </p>
+ * <p/>
  * e.g. Hello world[txt:&6Hover text!]. &3Click to perform a command[cmd:say Hello world!]
  */
 public class MarkupBuilder {
 
-    private static final Pattern MARKUP_PATTERN = Pattern.compile("(.*)\\[(txt|file|url|scmd|cmd):(.+?)\\](.*)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern MARKUP_PATTERN = Pattern.compile("\\[(txt|file|url|scmd|cmd):.+?\\]", Pattern.CASE_INSENSITIVE);
 
-    private String raw;
+    private StringBuilder raw;
 
     /**
      * Constructs a new markup builder for a {@link com.dsh105.powermessage.core.PowerMessage}
@@ -46,7 +46,7 @@ public class MarkupBuilder {
      * @return This builder
      */
     public MarkupBuilder withText(String raw) {
-        this.raw = ChatColor.translateAlternateColorCodes('&', raw);
+        this.raw.append(raw);
         return this;
     }
 
@@ -56,13 +56,17 @@ public class MarkupBuilder {
      */
     public PowerMessage build() {
         PowerMessage powerMessage = new PowerMessage();
+
         Matcher matcher = MARKUP_PATTERN.matcher(this.raw);
+
         int next = 0;
         while (next < this.raw.length()) {
             if (matcher.find(next)) {
-                powerMessage.then(matcher.group(1));
+                if (matcher.start() > next) {
+                    powerMessage.then(this.raw.substring(matcher.start(), next));
+                }
 
-                String input = matcher.group(3);
+                String input = ChatColor.translateAlternateColorCodes('&', matcher.group(3));
                 switch (matcher.group(2)) {
                     case "txt":
                         powerMessage.tooltip(input);
@@ -81,8 +85,9 @@ public class MarkupBuilder {
                         break;
                 }
 
-                next = matcher.regionEnd() + 1;
+                next = matcher.end() + 1;
             } else {
+                // We're finished
                 powerMessage.then(this.raw.substring(next));
                 break;
             }
