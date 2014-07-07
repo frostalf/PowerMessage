@@ -23,7 +23,6 @@ import com.captainbern.minecraft.reflection.MinecraftReflection;
 import com.captainbern.minecraft.wrapper.WrappedPacket;
 import com.captainbern.reflection.Reflection;
 import com.captainbern.reflection.accessor.MethodAccessor;
-import com.captainbern.reflection.matcher.Matchers;
 import com.dsh105.commodus.ServerUtil;
 import com.dsh105.commodus.paginator.Pageable;
 import com.dsh105.powermessage.exception.InvalidMessageException;
@@ -45,6 +44,9 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.captainbern.reflection.matcher.Matchers.withArguments;
+import static com.captainbern.reflection.matcher.Matchers.withReturnType;
+
 /**
  * Represents a message that internally manipulates JSON to allow the sending of fancy, interactive messages to players
  */
@@ -64,7 +66,7 @@ public class PowerMessage implements MessageBuilder, Pageable, JsonWritable, Clo
 
         CHAT_SERIALIZER = MinecraftReflection.getMinecraftClass("ChatSerializer");
         I_CHAT_BASE_COMPONENT = MinecraftReflection.getMinecraftClass("IChatBaseComponent");
-        CHAT_FROM_JSON = new Reflection().reflect(CHAT_SERIALIZER).getSafeMethods(Matchers.withReturnType(I_CHAT_BASE_COMPONENT), Matchers.withArguments(new Class[]{String.class})).get(0).getAccessor();
+        CHAT_FROM_JSON = new Reflection().reflect(CHAT_SERIALIZER).getSafeMethods(withReturnType(I_CHAT_BASE_COMPONENT), withArguments(new Class[]{String.class})).get(0).getAccessor();
     }
 
     private ArrayList<PowerSnippet> snippets = new ArrayList<>();

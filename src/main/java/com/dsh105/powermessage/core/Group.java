@@ -22,7 +22,6 @@ import com.captainbern.minecraft.wrapper.nbt.NbtFactory;
 import com.captainbern.minecraft.wrapper.nbt.NbtType;
 import com.captainbern.reflection.Reflection;
 import com.captainbern.reflection.accessor.MethodAccessor;
-import com.captainbern.reflection.matcher.Matchers;
 import com.dsh105.commodus.ItemUtil;
 import com.dsh105.commodus.StringUtil;
 import com.dsh105.powermessage.exception.InvalidMessageException;
@@ -39,22 +38,14 @@ import java.util.List;
 
 public class Group implements MessageBuilder {
 
-    private static final MethodAccessor CHAT_FROM_JSON;
-
-    private static Class<?> CHAT_SERIALIZER;
-    private static Class<?> I_CHAT_BASE_COMPONENT;
     private static Class<?> NBT_TAG_COMPOUND;
     private static Class<?> CRAFT_ITEMSTACK;
     private static Class<?> CRAFT_STATISTIC;
 
     static {
-        CHAT_SERIALIZER = MinecraftReflection.getMinecraftClass("ChatSerializer");
-        I_CHAT_BASE_COMPONENT = MinecraftReflection.getMinecraftClass("IChatBaseComponent");
         NBT_TAG_COMPOUND = NbtFactory.createTag(NbtType.TAG_COMPOUND).getHandle().getClass();
         CRAFT_ITEMSTACK = MinecraftReflection.getCraftItemStackClass();
         CRAFT_STATISTIC = MinecraftReflection.getCraftBukkitClass("CraftStatistic");
-
-        CHAT_FROM_JSON = new Reflection().reflect(CHAT_SERIALIZER).getSafeMethods(Matchers.withReturnType(I_CHAT_BASE_COMPONENT), Matchers.withArguments(new Class[]{String.class})).get(0).getAccessor();
     }
 
     private PowerMessage powerMessage;
