@@ -21,8 +21,6 @@ import com.captainbern.minecraft.protocol.PacketType;
 import com.captainbern.minecraft.reflection.MinecraftMethods;
 import com.captainbern.minecraft.reflection.MinecraftReflection;
 import com.captainbern.minecraft.wrapper.WrappedPacket;
-import com.captainbern.minecraft.wrapper.nbt.NbtFactory;
-import com.captainbern.minecraft.wrapper.nbt.NbtType;
 import com.captainbern.reflection.Reflection;
 import com.captainbern.reflection.accessor.MethodAccessor;
 import com.captainbern.reflection.matcher.Matchers;
@@ -60,20 +58,12 @@ public class PowerMessage implements MessageBuilder, Pageable, JsonWritable, Clo
 
     private static Class<?> CHAT_SERIALIZER;
     private static Class<?> I_CHAT_BASE_COMPONENT;
-    private static Class<?> NBT_TAG_COMPOUND;
-    private static Class<?> CRAFT_ITEMSTACK;
-    private static Class<?> CRAFT_STATISTIC;
-
 
     static {
         ConfigurationSerialization.registerClass(PowerMessage.class);
 
         CHAT_SERIALIZER = MinecraftReflection.getMinecraftClass("ChatSerializer");
         I_CHAT_BASE_COMPONENT = MinecraftReflection.getMinecraftClass("IChatBaseComponent");
-        NBT_TAG_COMPOUND = NbtFactory.createTag(NbtType.TAG_COMPOUND).getHandle().getClass();
-        CRAFT_ITEMSTACK = MinecraftReflection.getCraftItemStackClass();
-        CRAFT_STATISTIC = MinecraftReflection.getCraftBukkitClass("CraftStatistic");
-
         CHAT_FROM_JSON = new Reflection().reflect(CHAT_SERIALIZER).getSafeMethods(Matchers.withReturnType(I_CHAT_BASE_COMPONENT), Matchers.withArguments(new Class[]{String.class})).get(0).getAccessor();
     }
 
@@ -170,97 +160,97 @@ public class PowerMessage implements MessageBuilder, Pageable, JsonWritable, Clo
 
     @Override
     public PowerMessage edit(String snippetContent) {
-        group(1).edit(snippetContent);
+        currentGroup.edit(snippetContent);
         return this;
     }
 
     @Override
     public PowerMessage colour(ChatColor... colours) {
-        group(1).colour(colours);
+        currentGroup.colour(colours);
         return this;
     }
 
     @Override
     public PowerMessage file(String relativePath) {
-        group(1).file(relativePath);
+        currentGroup.file(relativePath);
         return this;
     }
 
     @Override
     public PowerMessage link(String urlLink) {
-        group(1).link(urlLink);
+        currentGroup.link(urlLink);
         return this;
     }
 
     @Override
     public PowerMessage suggest(String commandToSuggest) {
-        group(1).suggest(commandToSuggest);
+        currentGroup.suggest(commandToSuggest);
         return this;
     }
 
     @Override
     public PowerMessage perform(String commandToPerform) {
-        group(1).perform(commandToPerform);
+        currentGroup.perform(commandToPerform);
         return this;
     }
 
     @Override
     public PowerMessage tooltip(String... content) {
-        group(1).tooltip(content);
+        currentGroup.tooltip(content);
         return this;
     }
 
     @Override
     public PowerMessage tooltip(PowerMessage powerMessage) {
-        group(1).tooltip(powerMessage);
+        currentGroup.tooltip(powerMessage);
         return this;
     }
 
     @Override
     public PowerMessage achievementTooltip(String achievementName) {
-        group(1).achievementTooltip(achievementName);
+        currentGroup.achievementTooltip(achievementName);
         return this;
     }
 
     @Override
     public PowerMessage itemTooltip(String itemJson) {
-        group(1).itemTooltip(itemJson);
+        currentGroup.itemTooltip(itemJson);
         return this;
     }
 
     @Override
     public PowerMessage itemTooltip(String... itemContent) {
-        group(1).itemTooltip(itemContent);
+        currentGroup.itemTooltip(itemContent);
         return this;
     }
 
     @Override
     public PowerMessage itemTooltip(ItemStack itemStack) {
-        group(1).itemTooltip(itemStack);
+        currentGroup.itemTooltip(itemStack);
         return this;
     }
 
     @Override
     public PowerMessage achievementTooltip(Achievement which) {
-        group(1).achievementTooltip(which);
+        currentGroup.achievementTooltip(which);
         return this;
     }
 
     @Override
     public PowerMessage statisticTooltip(Statistic which) {
-        group(1).statisticTooltip(which);
+        currentGroup.statisticTooltip(which);
         return this;
     }
 
     @Override
     public PowerMessage statisticTooltip(Statistic which, Material item) {
-        group(1).statisticTooltip(which, item);
+        currentGroup.statisticTooltip(which, item);
         return this;
     }
 
     @Override
     public PowerMessage statisticTooltip(Statistic which, EntityType entity) {
-        group(1).statisticTooltip(which, entity);
+        currentGroup.statisticTooltip(which, entity);
         return this;
     }
 
@@ -364,7 +354,8 @@ public class PowerMessage implements MessageBuilder, Pageable, JsonWritable, Clo
      */
     public Group group(int count) {
         this.convertedToJson = false;
-        return new Group(this, count);
+        this.currentGroup = new Group(this, count);
+        return currentGroup;
     }
 
     /**
