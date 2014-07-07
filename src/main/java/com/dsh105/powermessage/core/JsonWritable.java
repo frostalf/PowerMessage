@@ -20,7 +20,6 @@ package com.dsh105.powermessage.core;
 import org.bukkit.craftbukkit.libs.com.google.gson.stream.JsonWriter;
 
 import java.io.IOException;
-import java.util.Map;
 
 public interface JsonWritable {
 

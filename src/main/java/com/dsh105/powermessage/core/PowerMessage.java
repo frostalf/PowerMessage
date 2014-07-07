@@ -26,9 +26,7 @@ import com.captainbern.minecraft.wrapper.nbt.NbtType;
 import com.captainbern.reflection.Reflection;
 import com.captainbern.reflection.accessor.MethodAccessor;
 import com.captainbern.reflection.matcher.Matchers;
-import com.dsh105.commodus.ItemUtil;
 import com.dsh105.commodus.ServerUtil;
-import com.dsh105.commodus.StringUtil;
 import com.dsh105.commodus.paginator.Pageable;
 import com.dsh105.powermessage.exception.InvalidMessageException;
 import org.bukkit.Achievement;
@@ -45,17 +43,14 @@ import org.bukkit.inventory.ItemStack;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * Represents a message that internally manipulates JSON to allow the sending of fancy, interactive messages to players
  */
-public class PowerMessage implements Pageable, JsonWritable, Cloneable, ConfigurationSerializable, Iterable<PowerSnippet> {
+public class PowerMessage implements MessageBuilder, Pageable, JsonWritable, Cloneable, ConfigurationSerializable, Iterable<PowerSnippet> {
 
     protected static final Pattern COLOUR_PATTERN = Pattern.compile(ChatColor.COLOR_CHAR + "([0-9A-FK-OR])", Pattern.CASE_INSENSITIVE);
 
@@ -85,6 +80,7 @@ public class PowerMessage implements Pageable, JsonWritable, Cloneable, Configur
     private ArrayList<PowerSnippet> snippets = new ArrayList<>();
     private String rawJson;
     private boolean convertedToJson;
+    private Group currentGroup;
 
     /**
      * Constructs a new, empty PowerMessage
@@ -172,13 +168,100 @@ public class PowerMessage implements Pageable, JsonWritable, Cloneable, Configur
         return this;
     }
 
+    @Override
     public PowerMessage edit(String snippetContent) {
-        modify().setText(snippetContent);
+        group(1).edit(snippetContent);
         return this;
     }
 
-    public PowerMessage then(String snippetContent) {
-        return then((Object) snippetContent);
+    @Override
+    public PowerMessage colour(ChatColor... colours) {
+        group(1).colour(colours);
+        return this;
+    }
+
+    @Override
+    public PowerMessage file(String relativePath) {
+        group(1).file(relativePath);
+        return this;
+    }
+
+    @Override
+    public PowerMessage link(String urlLink) {
+        group(1).link(urlLink);
+        return this;
+    }
+
+    @Override
+    public PowerMessage suggest(String commandToSuggest) {
+        group(1).suggest(commandToSuggest);
+        return this;
+    }
+
+    @Override
+    public PowerMessage perform(String commandToPerform) {
+        group(1).perform(commandToPerform);
+        return this;
+    }
+
+    @Override
+    public PowerMessage tooltip(String... content) {
+        group(1).tooltip(content);
+        return this;
+    }
+
+    @Override
+    public PowerMessage tooltip(PowerMessage powerMessage) {
+        group(1).tooltip(powerMessage);
+        return this;
+    }
+
+    @Override
+    public PowerMessage achievementTooltip(String achievementName) {
+        group(1).achievementTooltip(achievementName);
+        return this;
+    }
+
+    @Override
+    public PowerMessage itemTooltip(String itemJson) {
+        group(1).itemTooltip(itemJson);
+        return this;
+    }
+
+    @Override
+    public PowerMessage itemTooltip(String... itemContent) {
+        group(1).itemTooltip(itemContent);
+        return this;
+    }
+
+    @Override
+    public PowerMessage itemTooltip(ItemStack itemStack) {
+        group(1).itemTooltip(itemStack);
+        return this;
+    }
+
+    @Override
+    public PowerMessage achievementTooltip(Achievement which) {
+        group(1).achievementTooltip(which);
+        return this;
+    }
+
+    @Override
+    public PowerMessage statisticTooltip(Statistic which) {
+        group(1).statisticTooltip(which);
+        return this;
+    }
+
+    @Override
+    public PowerMessage statisticTooltip(Statistic which, Material item) {
+        group(1).statisticTooltip(which, item);
+        return this;
+    }
+
+    @Override
+    public PowerMessage statisticTooltip(Statistic which, EntityType entity) {
+        group(1).statisticTooltip(which, entity);
+        return this;
     }
 
     /**
@@ -187,8 +270,9 @@ public class PowerMessage implements Pageable, JsonWritable, Cloneable, Configur
      * @param snippetContent Content to begin the new snippet with
      * @return This object
      */
-    public PowerMessage then(Object snippetContent) {
-        String content = ChatColor.translateAlternateColorCodes('&', snippetContent.toString());
+    public PowerMessage then(String snippetContent) {
+        String content = ChatColor.translateAlternateColorCodes('&', snippetContent);
+        int groupCount = 0;
         if (content.length() > 0) {
             ArrayList<ChatColor> colours = new ArrayList<>();
             Matcher colourMatcher = COLOUR_PATTERN.matcher(content);
@@ -196,6 +280,7 @@ public class PowerMessage implements Pageable, JsonWritable, Cloneable, Configur
             while (colourMatcher.find()) {
                 if (colourMatcher.start() > lastEnd) {
                     then(new PowerSnippet(content.substring(lastEnd, colourMatcher.start()))).colour(colours.toArray(new ChatColor[0]));
+                    groupCount++;
                 }
 
                 ChatColor colour = ChatColor.getByChar(colourMatcher.group(1));
@@ -208,10 +293,22 @@ public class PowerMessage implements Pageable, JsonWritable, Cloneable, Configur
             }
             if (lastEnd < (content.length() - 1)) {
                 then(new PowerSnippet(content.substring(lastEnd, content.length()))).colour(colours.toArray(new ChatColor[0]));
+                groupCount++;
             }
+            // Group everything together so that changes can be applied to all of them
+            group(groupCount);
         }
-
         return this;
+    }
+
+    /**
+     * Begins construction of a new message snippet
+     *
+     * @param snippetContent Content to begin the new snippet with
+     * @return This object
+     */
+    public PowerMessage then(Object snippetContent) {
+        return then(snippetContent.toString());
     }
 
     /**
@@ -222,238 +319,8 @@ public class PowerMessage implements Pageable, JsonWritable, Cloneable, Configur
      */
     public PowerMessage then(PowerSnippet snippet) {
         snippets.add(snippet);
-        modify();
+        group(1);
         return this;
-    }
-
-    /**
-     * Adds colours to the current snippet of text
-     *
-     * @param colours Colours to add
-     * @return This object
-     */
-    public PowerMessage colour(ChatColor... colours) {
-        modify().withColour(colours);
-        return this;
-    }
-
-    /**
-     * Adds a file event to a PowerMessage
-     * <p/>
-     * Opens a file for the player that clicks the message, where the file path is relative to their computer only
-     *
-     * @param relativePath Path of the file to open
-     * @return This object
-     */
-    public PowerMessage file(String relativePath) {
-        modify().withEvent("click", "open_file", relativePath);
-        return this;
-    }
-
-    /**
-     * Adds a link event to a PowerMessage
-     * <p/>
-     * sOpen a specific URL link when clicked
-     *
-     * @param urlLink URL link to open
-     * @return This object
-     */
-    public PowerMessage link(String urlLink) {
-        modify().withEvent("click", "open_url", urlLink);
-        return this;
-    }
-
-    /**
-     * Adds a suggest event to a PowerMessage
-     * <p/>
-     * Auto-fills a certain command to the clicker's chat box
-     *
-     * @param commandToSuggest Command to suggest when clicked
-     * @return This object
-     */
-    public PowerMessage suggest(String commandToSuggest) {
-        modify().withEvent("click", "suggest_command", commandToSuggest);
-        return this;
-    }
-
-    /**
-     * Adds a perform event to a PowerMessage
-     * <p/>
-     * Performs a command on behalf of the player that clicked
-     *
-     * @param commandToPerform Command to perform when clicked
-     * @return This object
-     */
-    public PowerMessage perform(String commandToPerform) {
-        modify().withEvent("click", "run_command", commandToPerform);
-        return this;
-    }
-
-    /**
-     * Adds a tooltip to a PowerMessage
-     * <p/>
-     * Displays a multiline or single-line tooltip message to the viewer when the message is hovered over
-     *
-     * @param content Message to show when hovered over
-     * @return This object
-     */
-    public PowerMessage tooltip(String... content) {
-        if (content == null || content.length <= 0) {
-            throw new InvalidMessageException("Content cannot be empty");
-        }
-
-        modify().withEvent("hover", "show_text", content.length == 1 ? content[0] : StringUtil.combineArray(0, "\n", content));
-        return this;
-    }
-
-    /**
-     * Adds a tooltip to a PowerMessage
-     * <p/>
-     * Displays a multiline or single-line tooltip message to the viewer when the message is hovered over
-     * <p/>
-     * The provided PowerMessage will be stripped of all events before being added
-     *
-     * @param powerMessage Content to show when hovered over
-     * @return This object
-     */
-    public PowerMessage tooltip(PowerMessage powerMessage) {
-        if (powerMessage.getContent() == null || powerMessage.getContent().length() <= 0) {
-            throw new InvalidMessageException("Content cannot be empty");
-        }
-
-        modify().withEvent("hover", "show_text", powerMessage.getContent());
-        return this;
-    }
-
-    /**
-     * Adds an achievement tooltip to a PowerMessage
-     * <p/>
-     * Displays an achievement to the viewer when the message is hovered over
-     *
-     * @param achievementName Name of the achievement to show
-     * @return This object
-     */
-    public PowerMessage achievementTooltip(String achievementName) {
-        modify().withEvent("hover", "show_achievement", "achievement." + achievementName);
-        return this;
-    }
-
-    /**
-     * Adds an item tooltip to a PowerMessage
-     * <p/>
-     * Displays an item to the viewer when the message is hovered over
-     *
-     * @param itemJson JSON value of the item to add
-     * @return This object
-     */
-    public PowerMessage itemTooltip(String itemJson) {
-        modify().withEvent("hover", "show_item", itemJson);
-        return this;
-    }
-
-    /**
-     * Adds an item tooltip to a PowerMessage
-     * <p/>
-     * Displays an item to the viewer when the message is hovered over
-     *
-     * @param itemContent A group of strings to represent an item with a name and description
-     * @return This object
-     */
-    public PowerMessage itemTooltip(String... itemContent) {
-        return itemTooltip(ItemUtil.getItem(itemContent));
-    }
-
-    /**
-     * Adds an item tooltip to a PowerMessage
-     * <p/>
-     * Displays an item to the viewer when the message is hovered over
-     *
-     * @param itemStack ItemStack to show
-     * @return This object
-     */
-    public PowerMessage itemTooltip(ItemStack itemStack) {
-        Reflection r = new Reflection();
-        Object nmsCopy = r.reflect(CRAFT_ITEMSTACK).getSafeMethod("asNMSCopy", ItemStack.class).getAccessor().invokeStatic(itemStack);
-        Object nbtData = r.reflect(nmsCopy.getClass()).getSafeMethod("save", NBT_TAG_COMPOUND).getAccessor().invoke(nmsCopy, r.reflect(NBT_TAG_COMPOUND).getSafeConstructors());
-        return itemTooltip(nbtData.toString());
-    }
-
-    /**
-     * Adds an achievement tooltip to a PowerMessage
-     * <p/>
-     * Displays an achievement to the viewer when the message is hovered over
-     *
-     * @param which Achievement to show
-     * @return This object
-     */
-    public PowerMessage achievementTooltip(Achievement which) {
-        Reflection r = new Reflection();
-        Object achievement = r.reflect(CRAFT_STATISTIC).getSafeMethod("getNMSAchievement", Achievement.class).getAccessor().invokeStatic(which);
-        return achievementTooltip((String) r.reflect(achievement.getClass()).getSafeFieldByNameAndType("name", String.class).getAccessor().get(achievement));
-    }
-
-    /**
-     * Adds a statistic tooltip to a PowerMessage
-     * <p/>
-     * Displays a statistic to the viewer when the message is hovered over
-     *
-     * @param which Achievement to show
-     * @return This object
-     */
-    public PowerMessage statisticTooltip(Statistic which) {
-        if (which.getType() != Statistic.Type.UNTYPED) {
-            throw new IllegalArgumentException("That statistic requires an additional " + which.getType() + " parameter!");
-        }
-
-        Reflection r = new Reflection();
-        Object achievement = r.reflect(CRAFT_STATISTIC).getSafeMethod("getNMSStatistic", Statistic.class).getAccessor().invokeStatic(which);
-        return achievementTooltip((String) r.reflect(achievement.getClass()).getSafeFieldByNameAndType("name", String.class).getAccessor().get(achievement));
-    }
-
-    /**
-     * Adds an item statistic tooltip to a PowerMessage
-     * <p/>
-     * Displays a statistic to the viewer when the message is hovered over
-     *
-     * @param which Statistic to show
-     * @param item  Item to show
-     * @return This object
-     */
-    public PowerMessage statisticTooltip(Statistic which, Material item) {
-        if (which.getType() == Statistic.Type.UNTYPED) {
-            throw new IllegalArgumentException("That statistic requires no additional parameter!");
-        }
-
-        if ((which.getType() == Statistic.Type.BLOCK && item.isBlock()) || which.getType() == Statistic.Type.ENTITY) {
-            throw new IllegalArgumentException("Wrong parameter type for that statistic - needs " + which.getType() + "!");
-        }
-
-        Reflection r = new Reflection();
-        Object achievement = r.reflect(CRAFT_STATISTIC).getSafeMethod("getMaterialStatistic", Statistic.class, Material.class).getAccessor().invokeStatic(which, item);
-        return achievementTooltip((String) r.reflect(achievement.getClass()).getSafeFieldByNameAndType("name", String.class).getAccessor().get(achievement));
-    }
-
-    /**
-     * Adds an entity statistic tooltip to a PowerMessage
-     * <p/>
-     * Displays a statistic to the viewer when the message is hovered over
-     *
-     * @param which  Statistic to show
-     * @param entity Entity type to show
-     * @return This object
-     */
-    public PowerMessage statisticTooltip(Statistic which, EntityType entity) {
-        if (which.getType() == Statistic.Type.UNTYPED) {
-            throw new IllegalArgumentException("That statistic requires no additional parameter!");
-        }
-
-        if (which.getType() != Statistic.Type.ENTITY) {
-            throw new IllegalArgumentException("Wrong parameter type for that statistic - needs " + which.getType() + "!");
-        }
-
-        Reflection r = new Reflection();
-        Object achievement = r.reflect(CRAFT_STATISTIC).getSafeMethod("getEntityStatistic", Statistic.class, EntityType.class).getAccessor().invokeStatic(which, entity);
-        return achievementTooltip((String) r.reflect(achievement.getClass()).getSafeFieldByNameAndType("name", String.class).getAccessor().get(achievement));
     }
 
     /**
@@ -463,8 +330,8 @@ public class PowerMessage implements Pageable, JsonWritable, Cloneable, Configur
      *
      * @return List of snippets in a PowerMessage
      */
-    public ArrayList<PowerSnippet> getSnippets() {
-        return new ArrayList<>(snippets);
+    public List<PowerSnippet> getSnippets() {
+        return Collections.unmodifiableList(snippets);
     }
 
     /**
@@ -477,13 +344,40 @@ public class PowerMessage implements Pageable, JsonWritable, Cloneable, Configur
         return snippets.get(index);
     }
 
-    private PowerSnippet lastSnippet() {
-        return getSnippet(snippets.size() - 1);
+    /**
+     * Gets a group of all snippets in a PowerMessage so that changes can be applied to them more easily
+     *
+     * @return A Group representing all snippets in a PowerMessage
+     */
+    public Group group() {
+        this.convertedToJson = false;
+        return new Group(this, groupCount());
     }
 
-    private PowerSnippet modify() {
+    /**
+     * Gets a group of snippets so that changes can be applied to all more easily
+     * <p/>
+     * The snippets are counted backwards <i>n</i> times inclusively, where <i>count</i> is
+     *
+     * @param count Number of snippets to include
+     * @return A {@link com.dsh105.powermessage.core.Group} representing a certain number of snippets
+     */
+    public Group group(int count) {
         this.convertedToJson = false;
-        return lastSnippet();
+        return new Group(this, count);
+    }
+
+    /**
+     * Gets the number of snippets in a PowerMessage
+     *
+     * @return Group count (number of snippets)
+     */
+    public int groupCount() {
+        return snippets.size();
+    }
+
+    private PowerSnippet lastSnippet() {
+        return getSnippet(snippets.size() - 1);
     }
 
     private boolean isConvertedToJson() {

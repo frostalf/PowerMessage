@@ -42,6 +42,7 @@ public class MarkupBuilder {
 
     /**
      * Adds text to the builder
+     *
      * @param raw Text to add
      * @return This builder
      */
@@ -52,6 +53,7 @@ public class MarkupBuilder {
 
     /**
      * Converts the markup to a new {@link PowerMessage}
+     *
      * @return PowerMessage constructed from the supplied markup
      */
     public PowerMessage build() {
