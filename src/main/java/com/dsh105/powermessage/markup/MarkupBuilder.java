@@ -32,7 +32,7 @@ public class MarkupBuilder {
 
     private static final Pattern MARKUP_PATTERN = Pattern.compile("\\[(txt|file|url|scmd|cmd):.+?\\]", Pattern.CASE_INSENSITIVE);
 
-    private StringBuilder raw;
+    private StringBuilder raw = new StringBuilder();
 
     /**
      * Constructs a new markup builder for a {@link com.dsh105.powermessage.core.PowerMessage}
