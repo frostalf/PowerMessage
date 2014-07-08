@@ -86,7 +86,7 @@ public class PowerMessage implements MessageBuilder, Pageable, JsonWritable, Clo
      * @param firstSnippet First snippet to construct the message with
      */
     public PowerMessage(String firstSnippet) {
-        this.snippets.add(new PowerSnippet(firstSnippet));
+        then(firstSnippet);
     }
 
     @Override
