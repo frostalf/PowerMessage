@@ -146,12 +146,6 @@
                                     <include>com.dsh105:Commodus</include>
                                 </includes>
                             </artifactSet>
-                            <relocations>
-                                <relocation>
-                                    <pattern>com.dsh105.commodus</pattern>
-                                    <shadedPattern>com.dsh105.powermessage.libs.commodus</shadedPattern>
-                                </relocation>
-                            </relocations>
                         </configuration>
                     </execution>
                 </executions>
