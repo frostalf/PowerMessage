@@ -17,14 +17,9 @@
 
 package com.dsh105.powermessage.core;
 
-import com.captainbern.minecraft.protocol.PacketType;
-import com.captainbern.minecraft.reflection.MinecraftMethods;
-import com.captainbern.minecraft.reflection.MinecraftReflection;
-import com.captainbern.minecraft.wrapper.WrappedPacket;
-import com.captainbern.reflection.Reflection;
-import com.captainbern.reflection.accessor.MethodAccessor;
 import com.dsh105.commodus.ServerUtil;
 import com.dsh105.commodus.paginator.Pageable;
+import com.dsh105.commodus.reflection.Reflection;
 import com.dsh105.powermessage.exception.InvalidMessageException;
 import org.bukkit.Achievement;
 import org.bukkit.ChatColor;
@@ -40,12 +35,10 @@ import org.bukkit.inventory.ItemStack;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static com.captainbern.reflection.matcher.Matchers.withArguments;
-import static com.captainbern.reflection.matcher.Matchers.withReturnType;
 
 /**
  * Represents a message that internally manipulates JSON to allow the sending of fancy, interactive messages to players
@@ -54,19 +47,32 @@ public class PowerMessage implements MessageBuilder, Pageable, JsonWritable, Clo
 
     protected static final Pattern COLOUR_PATTERN = Pattern.compile(ChatColor.COLOR_CHAR + "([0-9A-FK-OR])", Pattern.CASE_INSENSITIVE);
 
-    private static final MethodAccessor CHAT_FROM_JSON;
+    private static Method CHAT_FROM_JSON;
+
+    private static Method OUTBOUND_PACKETS;
+    private static Class<?> CHAT_PACKET_CLASS;
 
     private static final String SERIALIZED_SNIPPETS = "snippets";
-
-    private static Class<?> CHAT_SERIALIZER;
-    private static Class<?> I_CHAT_BASE_COMPONENT;
 
     static {
         ConfigurationSerialization.registerClass(PowerMessage.class);
 
-        CHAT_SERIALIZER = MinecraftReflection.getMinecraftClass("ChatSerializer");
-        I_CHAT_BASE_COMPONENT = MinecraftReflection.getMinecraftClass("IChatBaseComponent");
-        CHAT_FROM_JSON = new Reflection().reflect(CHAT_SERIALIZER).getSafeMethods(withReturnType(I_CHAT_BASE_COMPONENT), withArguments(new Class[]{String.class})).get(0).getAccessor();
+        for (Method method : Reflection.getNMSClass("ChatSerializer").getDeclaredMethods()) {
+            if (method.getReturnType().equals(Reflection.getNMSClass("IChatBaseComponent")) && method.getParameterTypes() == new Class<?>[]{String.class}) {
+                CHAT_FROM_JSON = method;
+                break;
+            }
+        }
+
+        ArrayList<Method> packetMethods = new ArrayList<>();
+        for (Method method : Reflection.getNMSClass("EnumProtocol").getDeclaredMethods()) {
+            if (Map.class.isAssignableFrom(method.getReturnType()) && method.getParameterTypes().length == 0) {
+                method.setAccessible(true);
+                packetMethods.add(method);
+            }
+        }
+        OUTBOUND_PACKETS = packetMethods.get(1);
+        CHAT_PACKET_CLASS = (Class<?>) ((Map) Reflection.invoke(OUTBOUND_PACKETS, Reflection.getNMSClass("EnumProtocol").getEnumConstants()[1])).get(0x01);
     }
 
     private ArrayList<PowerSnippet> snippets = new ArrayList<>();
@@ -137,10 +143,12 @@ public class PowerMessage implements MessageBuilder, Pageable, JsonWritable, Clo
      * @return This object
      */
     public PowerMessage send(Player player) {
-        if (ServerUtil.MC_VERSION_NUMERIC >= 170) {
-            WrappedPacket chat = new WrappedPacket(PacketType.Play.Server.CHAT);
-            chat.getAccessor((Class<Object>) I_CHAT_BASE_COMPONENT).write(0, CHAT_FROM_JSON.invokeStatic(toJson()));
-            MinecraftMethods.sendPacket(player, chat.getHandle());
+        if (ServerUtil.BUKKIT_VERSION_NUMERIC > 170) {
+            String json = (String) Reflection.invokeStatic(CHAT_FROM_JSON, toJson());
+            Object packet = Reflection.newInstance(Reflection.getConstructor(CHAT_PACKET_CLASS, Reflection.getNMSClass("IChatBaseComponent")), json);
+            Object handle = Reflection.invoke(Reflection.getMethod(player.getClass(), "getHandle"), player);
+            Object connection = Reflection.getFieldValue(handle, "playerConnection");
+            Reflection.invoke(Reflection.getMethod(connection.getClass(), "sendPacket", Reflection.getNMSClass("Packet")), connection, packet);
         } else {
             player.sendMessage(getContent());
         }

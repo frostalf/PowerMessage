@@ -17,18 +17,12 @@
 
 package com.dsh105.powermessage.core;
 
-import com.captainbern.minecraft.reflection.MinecraftReflection;
-import com.captainbern.minecraft.wrapper.nbt.NbtFactory;
-import com.captainbern.minecraft.wrapper.nbt.NbtType;
-import com.captainbern.reflection.Reflection;
-import com.captainbern.reflection.accessor.MethodAccessor;
 import com.dsh105.commodus.ItemUtil;
+import com.dsh105.commodus.ServerUtil;
 import com.dsh105.commodus.StringUtil;
+import com.dsh105.commodus.reflection.Reflection;
 import com.dsh105.powermessage.exception.InvalidMessageException;
-import org.bukkit.Achievement;
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
-import org.bukkit.Statistic;
+import org.bukkit.*;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
 
@@ -37,16 +31,6 @@ import java.util.Collections;
 import java.util.List;
 
 public class Group implements MessageBuilder {
-
-    private static Class<?> NBT_TAG_COMPOUND;
-    private static Class<?> CRAFT_ITEMSTACK;
-    private static Class<?> CRAFT_STATISTIC;
-
-    static {
-        NBT_TAG_COMPOUND = NbtFactory.createTag(NbtType.TAG_COMPOUND).getHandle().getClass();
-        CRAFT_ITEMSTACK = MinecraftReflection.getCraftItemStackClass();
-        CRAFT_STATISTIC = MinecraftReflection.getCraftBukkitClass("CraftStatistic");
-    }
 
     private PowerMessage powerMessage;
     private int start;
@@ -177,17 +161,15 @@ public class Group implements MessageBuilder {
 
     @Override
     public Group itemTooltip(ItemStack itemStack) {
-        Reflection r = new Reflection();
-        Object nmsCopy = r.reflect(CRAFT_ITEMSTACK).getSafeMethod("asNMSCopy", ItemStack.class).getAccessor().invokeStatic(itemStack);
-        Object nbtData = r.reflect(nmsCopy.getClass()).getSafeMethod("save", NBT_TAG_COMPOUND).getAccessor().invoke(nmsCopy, r.reflect(NBT_TAG_COMPOUND).getSafeConstructors());
+        Object nmsCopy = Reflection.invokeStatic(Reflection.getMethod(Reflection.getOBCClass("inventory.CraftItemStack"), "asNMSCopy", ItemStack.class), itemStack);
+        Object nbtData = Reflection.invoke(Reflection.getMethod(nmsCopy.getClass(), "save", Reflection.getNMSClass("NBTTagCompound")), Reflection.newInstance(Reflection.getConstructor(Reflection.getNMSClass("NBTTagCompound"))));
         return itemTooltip(nbtData.toString());
     }
 
     @Override
     public Group achievementTooltip(Achievement which) {
-        Reflection r = new Reflection();
-        Object achievement = r.reflect(CRAFT_STATISTIC).getSafeMethod("getNMSAchievement", Achievement.class).getAccessor().invokeStatic(which);
-        return achievementTooltip(r.reflect(achievement.getClass()).getSafeFieldByNameAndType("name", String.class).getAccessor().get(achievement));
+        Object achievement = Reflection.invokeStatic(Reflection.getMethod(Reflection.getOBCClass("CraftStatistic"), "getNMSAchievement", Achievement.class), which);
+        return achievementTooltip((String) Reflection.getFieldValue(Reflection.getNMSClass("Achievement"), achievement, "name"));
     }
 
     @Override
@@ -196,9 +178,8 @@ public class Group implements MessageBuilder {
             throw new IllegalArgumentException("That statistic requires an additional " + which.getType() + " parameter!");
         }
 
-        Reflection r = new Reflection();
-        Object achievement = r.reflect(CRAFT_STATISTIC).getSafeMethod("getNMSStatistic", Statistic.class).getAccessor().invokeStatic(which);
-        return achievementTooltip(r.reflect(achievement.getClass()).getSafeFieldByNameAndType("name", String.class).getAccessor().get(achievement));
+        Object statistic = Reflection.invokeStatic(Reflection.getMethod(Reflection.getOBCClass("CraftStatistic"), "getNMSStatistic", Statistic.class), which);
+        return achievementTooltip((String) Reflection.getFieldValue(Reflection.getNMSClass("Statistic"), statistic, "name"));
     }
 
     @Override
@@ -211,9 +192,8 @@ public class Group implements MessageBuilder {
             throw new IllegalArgumentException("Wrong parameter type for that statistic - needs " + which.getType() + "!");
         }
 
-        Reflection r = new Reflection();
-        Object achievement = r.reflect(CRAFT_STATISTIC).getSafeMethod("getMaterialStatistic", Statistic.class, Material.class).getAccessor().invokeStatic(which, item);
-        return achievementTooltip(r.reflect(achievement.getClass()).getSafeFieldByNameAndType("name", String.class).getAccessor().get(achievement));
+        Object statistic = Reflection.invokeStatic(Reflection.getMethod(Reflection.getOBCClass("CraftStatistic"), "getMaterialStatistic", Statistic.class, Material.class), which, item);
+        return achievementTooltip((String) Reflection.getFieldValue(Reflection.getNMSClass("Statistic"), statistic, "name"));
     }
 
     @Override
@@ -226,8 +206,7 @@ public class Group implements MessageBuilder {
             throw new IllegalArgumentException("Wrong parameter type for that statistic - needs " + which.getType() + "!");
         }
 
-        Reflection r = new Reflection();
-        Object achievement = r.reflect(CRAFT_STATISTIC).getSafeMethod("getEntityStatistic", Statistic.class, EntityType.class).getAccessor().invokeStatic(which, entity);
-        return achievementTooltip(r.reflect(achievement.getClass()).getSafeFieldByNameAndType("name", String.class).getAccessor().get(achievement));
+        Object statistic = Reflection.invokeStatic(Reflection.getMethod(Reflection.getOBCClass("CraftStatistic"), "getEntityStatistic", Statistic.class, EntityType.class), which, entity);
+        return achievementTooltip((String) Reflection.getFieldValue(Reflection.getNMSClass("Statistic"), statistic, "name"));
     }
 }
