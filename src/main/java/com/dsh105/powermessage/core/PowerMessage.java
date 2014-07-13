@@ -72,6 +72,13 @@ public class PowerMessage implements MessageBuilder, Pageable, JsonWritable, Clo
             }
         }
         CHAT_PACKET_CLASS = (Class<?>) ((Map) Reflection.invoke(packetMethods.get(0), Reflection.getNMSClass("EnumProtocol").getEnumConstants()[1])).get(0x02);
+
+        try {
+            CHAT_PACKET_CLASS.getConstructor(Reflection.getNMSClass("IChatBaseComponent"));
+        } catch (NoSuchMethodException e) {
+            // This is more of a backup
+            CHAT_PACKET_CLASS = Reflection.getClass("PacketPlayOutChat");
+        }
     }
 
     private ArrayList<PowerSnippet> snippets = new ArrayList<>();
