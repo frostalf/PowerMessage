@@ -49,7 +49,6 @@ public class PowerMessage implements MessageBuilder, Pageable, JsonWritable, Clo
 
     private static Method CHAT_FROM_JSON;
 
-    private static Method OUTBOUND_PACKETS;
     private static Class<?> CHAT_PACKET_CLASS;
 
     private static final String SERIALIZED_SNIPPETS = "snippets";
@@ -71,8 +70,7 @@ public class PowerMessage implements MessageBuilder, Pageable, JsonWritable, Clo
                 packetMethods.add(method);
             }
         }
-        OUTBOUND_PACKETS = packetMethods.get(1);
-        CHAT_PACKET_CLASS = (Class<?>) ((Map) Reflection.invoke(OUTBOUND_PACKETS, Reflection.getNMSClass("EnumProtocol").getEnumConstants()[1])).get(0x02);
+        CHAT_PACKET_CLASS = (Class<?>) ((Map) Reflection.invoke(packetMethods.get(0), Reflection.getNMSClass("EnumProtocol").getEnumConstants()[1])).get(0x02);
     }
 
     private ArrayList<PowerSnippet> snippets = new ArrayList<>();
