@@ -18,6 +18,7 @@
 package com.dsh105.powermessage.core;
 
 import com.dsh105.commodus.ServerUtil;
+import com.dsh105.commodus.StringUtil;
 import com.dsh105.commodus.paginator.Pageable;
 import com.dsh105.commodus.reflection.Reflection;
 import com.dsh105.powermessage.exception.InvalidMessageException;
@@ -57,7 +58,7 @@ public class PowerMessage implements MessageBuilder, Pageable, JsonWritable, Clo
         ConfigurationSerialization.registerClass(PowerMessage.class);
 
         for (Method method : Reflection.getNMSClass("ChatSerializer").getDeclaredMethods()) {
-            if (method.getReturnType().equals(Reflection.getNMSClass("IChatBaseComponent")) && method.getParameterTypes() == new Class<?>[]{String.class}) {
+            if (method.getReturnType().equals(Reflection.getNMSClass("IChatBaseComponent")) && method.getParameterTypes().length == 1 && method.getParameterTypes()[0].equals(String.class)) {
                 CHAT_FROM_JSON = method;
                 break;
             }
@@ -142,8 +143,8 @@ public class PowerMessage implements MessageBuilder, Pageable, JsonWritable, Clo
      */
     public PowerMessage send(Player player) {
         if (ServerUtil.BUKKIT_VERSION_NUMERIC > 170) {
-            String json = (String) Reflection.invokeStatic(CHAT_FROM_JSON, toJson());
-            Object packet = Reflection.newInstance(Reflection.getConstructor(CHAT_PACKET_CLASS, Reflection.getNMSClass("IChatBaseComponent")), json);
+            Object chatComponent = Reflection.invokeStatic(CHAT_FROM_JSON, toJson());
+            Object packet = Reflection.newInstance(Reflection.getConstructor(CHAT_PACKET_CLASS, Reflection.getNMSClass("IChatBaseComponent")), chatComponent);
             Object handle = Reflection.invoke(Reflection.getMethod(player.getClass(), "getHandle"), player);
             Object connection = Reflection.getFieldValue(handle, "playerConnection");
             Reflection.invoke(Reflection.getMethod(connection.getClass(), "sendPacket", Reflection.getNMSClass("Packet")), connection, packet);
