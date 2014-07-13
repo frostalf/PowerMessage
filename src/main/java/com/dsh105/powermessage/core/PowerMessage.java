@@ -77,7 +77,7 @@ public class PowerMessage implements MessageBuilder, Pageable, JsonWritable, Clo
             CHAT_PACKET_CLASS.getConstructor(Reflection.getNMSClass("IChatBaseComponent"));
         } catch (NoSuchMethodException e) {
             // This is more of a backup
-            CHAT_PACKET_CLASS = Reflection.getClass("PacketPlayOutChat");
+            CHAT_PACKET_CLASS = Reflection.getNMSClass("PacketPlayOutChat");
         }
     }
 
