@@ -179,6 +179,13 @@ public class PowerMessage implements MessageBuilder, Pageable, JsonWritable, Clo
         return currentGroup.getText();
     }
 
+    public PowerMessage clear() {
+        this.snippets.clear();
+        currentGroup = null;
+        convertedToJson = false;
+        return this;
+    }
+
     @Override
     public PowerMessage edit(String snippetContent) {
         currentGroup.edit(snippetContent);

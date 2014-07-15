@@ -26,6 +26,11 @@ import org.bukkit.inventory.ItemStack;
 
 public interface MessageBuilder {
 
+    /**
+     * Gets the raw, colourless text the is represented by all snippets in this message
+     *
+     * @return Text in this message
+     */
     String getText();
 
     MessageBuilder edit(String snippetContent);
