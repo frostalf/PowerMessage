@@ -175,6 +175,11 @@ public class PowerMessage implements MessageBuilder, Pageable, JsonWritable, Clo
     }
 
     @Override
+    public String getText() {
+        return currentGroup.getText();
+    }
+
+    @Override
     public PowerMessage edit(String snippetContent) {
         currentGroup.edit(snippetContent);
         return this;

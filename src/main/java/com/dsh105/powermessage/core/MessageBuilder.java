@@ -26,6 +26,8 @@ import org.bukkit.inventory.ItemStack;
 
 public interface MessageBuilder {
 
+    String getText();
+
     MessageBuilder edit(String snippetContent);
 
     /**

@@ -54,7 +54,7 @@ public class Group implements MessageBuilder {
         return end;
     }
 
-    private List<PowerSnippet> getSnippets() {
+    protected List<PowerSnippet> getSnippets() {
         ArrayList<PowerSnippet> snippets = new ArrayList<>();
         for (int i = start; i < end; i++) {
             snippets.add(powerMessage.getSnippet(i));
@@ -64,6 +64,15 @@ public class Group implements MessageBuilder {
 
     public PowerMessage exit() {
         return powerMessage;
+    }
+
+    @Override
+    public String getText() {
+        StringBuilder builder = new StringBuilder();
+        for (PowerSnippet snippet : getSnippets()) {
+            builder.append(snippet.getText());
+        }
+        return builder.toString();
     }
 
     @Override
