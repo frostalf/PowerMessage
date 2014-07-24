@@ -149,7 +149,7 @@ public class PowerMessage implements MessageBuilder, Pageable, JsonWritable, Clo
      * @return This object
      */
     public PowerMessage send(Player player) {
-        if (ServerUtil.BUKKIT_VERSION_NUMERIC > 170) {
+        if (ServerUtil.getVersion().isCompatible("1.7")) {
             Object chatComponent = Reflection.invokeStatic(CHAT_FROM_JSON, toJson());
             Object packet = Reflection.newInstance(Reflection.getConstructor(CHAT_PACKET_CLASS, Reflection.getNMSClass("IChatBaseComponent")), chatComponent);
             Object handle = Reflection.invoke(Reflection.getMethod(player.getClass(), "getHandle"), player);
