@@ -48,11 +48,10 @@ public class PowerMessage implements MessageBuilder, Pageable, JsonWritable, Clo
 
     protected static final Pattern COLOUR_PATTERN = Pattern.compile(ChatColor.COLOR_CHAR + "([0-9A-FK-OR])", Pattern.CASE_INSENSITIVE);
 
-    private static Method CHAT_FROM_JSON;
+    private static final String SERIALIZED_SNIPPETS = "snippets";
 
     private static Class<?> CHAT_PACKET_CLASS;
-
-    private static final String SERIALIZED_SNIPPETS = "snippets";
+    private static Method CHAT_FROM_JSON;
 
     static {
         ConfigurationSerialization.registerClass(PowerMessage.class);
@@ -375,7 +374,7 @@ public class PowerMessage implements MessageBuilder, Pageable, JsonWritable, Clo
     /**
      * Gets a group of snippets so that changes can be applied to all more easily
      * <p/>
-     * The snippets are counted backwards <i>n</i> times inclusively, where <i>count</i> is
+     * The snippets are counted backwards <i>{@code count}</i> times inclusively
      *
      * @param count Number of snippets to include
      * @return A {@link com.dsh105.powermessage.core.Group} representing a certain number of snippets
@@ -385,6 +384,23 @@ public class PowerMessage implements MessageBuilder, Pageable, JsonWritable, Clo
         this.currentGroup = new Group(this, count);
         return currentGroup;
     }
+
+    /**
+     * Gets a group of snippets so that changes can be applied to all more easily
+     * <p/>
+     * The group begins at the specified {@code startIndex} and extends to the snippet at index {@code endIndex} - 1. Thus the number of snippets included is {@code endIndex}-@{code startIndex}
+     *
+     * @param startIndex The starting index, inclusive
+     * @param endIndex The ending index, exclusive
+     * @return A {@link com.dsh105.powermessage.core.Group} representing a certain number of snippets
+     */
+    // Inclusively from startIndex, exclusively
+    public Group group(int startIndex, int endIndex) {
+        this.convertedToJson = false;
+        this.currentGroup = new Group(this, startIndex, endIndex);
+        return currentGroup;
+    }
+
 
     /**
      * Gets the number of snippets in a PowerMessage
