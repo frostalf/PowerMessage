@@ -25,8 +25,9 @@ import java.util.regex.Pattern;
 
 /**
  * A very, very simple markup builder for JSON messages
- * <p/>
+ * 
  * e.g. Hello world[txt:&6Hover text!]. &3Click to perform a command[cmd:say Hello world!]
+ * 
  */
 public class MarkupBuilder {
 
