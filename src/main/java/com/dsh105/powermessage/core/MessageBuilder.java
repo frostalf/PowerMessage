@@ -45,7 +45,7 @@ public interface MessageBuilder {
 
     /**
      * Adds a file event to a PowerMessage
-     * <p/>
+     * <p>
      * Opens a file for the player that clicks the message, where the file path is relative to their computer only
      *
      * @param relativePath Path of the file to open
@@ -55,7 +55,7 @@ public interface MessageBuilder {
 
     /**
      * Adds a link event to a PowerMessage
-     * <p/>
+     * <p>
      * Opens a specific URL link when clicked
      *
      * @param urlLink URL link to open
@@ -65,7 +65,7 @@ public interface MessageBuilder {
 
     /**
      * Adds a suggest event to a PowerMessage
-     * <p/>
+     * <p>
      * Auto-fills a certain command to the clicker's chat box
      *
      * @param commandToSuggest Command to suggest when clicked
@@ -75,7 +75,7 @@ public interface MessageBuilder {
 
     /**
      * Adds a perform event to a PowerMessage
-     * <p/>
+     * <p>
      * Performs a command on behalf of the player that clicked
      *
      * @param commandToPerform Command to perform when clicked
@@ -85,7 +85,7 @@ public interface MessageBuilder {
 
     /**
      * Adds a tooltip to a PowerMessage
-     * <p/>
+     * <p>
      * Displays a multiline or single-line tooltip message to the viewer when the message is hovered over
      *
      * @param content Message to show when hovered over
@@ -95,9 +95,9 @@ public interface MessageBuilder {
 
     /**
      * Adds a tooltip to a PowerMessage
-     * <p/>
+     * <p>
      * Displays a multiline or single-line tooltip message to the viewer when the message is hovered over
-     * <p/>
+     * <p>
      * The provided PowerMessage will be stripped of all events before being added
      *
      * @param powerMessage Content to show when hovered over
@@ -107,7 +107,7 @@ public interface MessageBuilder {
 
     /**
      * Adds an achievement tooltip to a PowerMessage
-     * <p/>
+     * <p>
      * Displays an achievement to the viewer when the message is hovered over
      *
      * @param achievementName Name of the achievement to show
@@ -117,7 +117,7 @@ public interface MessageBuilder {
 
     /**
      * Adds an item tooltip to a PowerMessage
-     * <p/>
+     * <p>
      * Displays an item to the viewer when the message is hovered over
      *
      * @param itemJson JSON value of the item to add
@@ -127,7 +127,7 @@ public interface MessageBuilder {
 
     /**
      * Adds an item tooltip to a PowerMessage
-     * <p/>
+     * <p>
      * Displays an item to the viewer when the message is hovered over
      *
      * @param itemContent A group of strings to represent an item with a name and description
@@ -137,7 +137,7 @@ public interface MessageBuilder {
 
     /**
      * Adds an item tooltip to a PowerMessage
-     * <p/>
+     * <p>
      * Displays an item to the viewer when the message is hovered over
      *
      * @param itemStack ItemStack to show
@@ -147,7 +147,7 @@ public interface MessageBuilder {
 
     /**
      * Adds an achievement tooltip to a PowerMessage
-     * <p/>
+     * <p>
      * Displays an achievement to the viewer when the message is hovered over
      *
      * @param which Achievement to show
@@ -157,7 +157,7 @@ public interface MessageBuilder {
 
     /**
      * Adds a statistic tooltip to a PowerMessage
-     * <p/>
+     * <p>
      * Displays a statistic to the viewer when the message is hovered over
      *
      * @param which Achievement to show
@@ -167,7 +167,7 @@ public interface MessageBuilder {
 
     /**
      * Adds an item statistic tooltip to a PowerMessage
-     * <p/>
+     * <p>
      * Displays a statistic to the viewer when the message is hovered over
      *
      * @param which Statistic to show
@@ -178,7 +178,7 @@ public interface MessageBuilder {
 
     /**
      * Adds an entity statistic tooltip to a PowerMessage
-     * <p/>
+     * <p>
      * Displays a statistic to the viewer when the message is hovered over
      *
      * @param which  Statistic to show
