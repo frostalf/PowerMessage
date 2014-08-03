@@ -342,7 +342,7 @@ public class PowerMessage implements MessageBuilder, Pageable, JsonWritable, Clo
 
     /**
      * Gets a copy of the snippets in a PowerMessage
-     * <p/>
+     * <p>
      * Editing this list will not change the content of the original PowerMessage
      *
      * @return List of snippets in a PowerMessage
@@ -373,7 +373,7 @@ public class PowerMessage implements MessageBuilder, Pageable, JsonWritable, Clo
 
     /**
      * Gets a group of snippets so that changes can be applied to all more easily
-     * <p/>
+     * <p>
      * The snippets are counted backwards <i>{@code count}</i> times inclusively
      *
      * @param count Number of snippets to include
@@ -387,7 +387,7 @@ public class PowerMessage implements MessageBuilder, Pageable, JsonWritable, Clo
 
     /**
      * Gets a group of snippets so that changes can be applied to all more easily
-     * <p/>
+     * <p>
      * The group begins at the specified {@code startIndex} and extends to the snippet at index {@code endIndex} - 1. Thus the number of snippets included is {@code endIndex}-@{code startIndex}
      *
      * @param startIndex The starting index, inclusive
